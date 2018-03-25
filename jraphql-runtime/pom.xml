@@ -15,12 +15,10 @@
         <dependency>
             <groupId>me.wener.jraphql</groupId>
             <artifactId>jraphql-lang</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>me.wener.jraphql</groupId>
             <artifactId>jrapgql-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
