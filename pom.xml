@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.wener.jraphql</groupId>
     <artifactId>jraphql</artifactId>
     <packaging>pom</packaging>
     <version>0.0.2-SNAPSHOT</version>
+    <name>JraphQL</name>
     <modules>
         <module>jraphql-parser-antlr</module>
         <module>jraphql-lang</module>
@@ -167,5 +170,5 @@
         <developerConnection>scm:git:https://github.com/wenerme/jraphql.git</developerConnection>
         <url>http://github.com/wenerme/jraphql</url>
         <tag>HEAD</tag>
-  </scm>
+    </scm>
 </project>
