@@ -2,10 +2,10 @@ package me.wener.jraphql.adapter;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.idl.WiringFactory;
-import java.util.function.Consumer;
 import jodd.bean.BeanCopy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import me.wener.jraphql.api.ResolverFunction;
 import me.wener.jraphql.api.ValueResolver;
 import me.wener.jraphql.runtime.ValueResolverImpl;
 
@@ -41,11 +41,12 @@ public class AbstractWiringFactory implements WiringFactory {
     throw new AssertionError();
   }
 
-  private <IN, OUT> ValueResolver<IN, OUT> resolve(
+  /**
+   * Execute resolver function, can subclass to add pre/post process.
+   */
+  protected <IN, OUT> ValueResolver<IN, OUT> resolve(
       ResolverFunction<IN, OUT> function, ValueResolver<IN, OUT> resolver) {
     function.accept(resolver);
     return resolver;
   }
-
-  interface ResolverFunction<IN, OUT> extends Consumer<ValueResolver<IN, OUT>> {}
 }

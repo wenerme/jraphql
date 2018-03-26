@@ -72,7 +72,7 @@ public class ValueResolverImpl<IN, OUT> implements ValueResolver<IN, OUT> {
     resolved = true;
   }
 
-  private void checkResolved() {
+  protected void checkResolved() {
     Preconditions.checkState(!resolved, "Value already resolved");
   }
 }
