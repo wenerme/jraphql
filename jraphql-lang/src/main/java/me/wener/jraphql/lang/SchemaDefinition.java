@@ -1,7 +1,5 @@
 package me.wener.jraphql.lang;
 
-import com.google.common.collect.Lists;
-import java.util.List;
 import lombok.Data;
 
 /**
@@ -9,10 +7,8 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class SchemaDefinition extends AbstractDefinition
-    implements HasDirectives<SchemaDefinition> {
+public class SchemaDefinition extends AbstractTypeDefinition<SchemaDefinition> {
 
-  private List<Directive> directives = Lists.newArrayList();
   private String queryTypeName;
   private String mutationTypeName;
   private String subscriptionTypeName;

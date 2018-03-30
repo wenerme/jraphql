@@ -4,10 +4,16 @@ import lombok.Data;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
- * @since 16/03/2018
+ * @since 30/03/2018
  */
 @Data
-public class NamedType extends AbstractNode implements Type, HasName<NamedType> {
+public class NamedType extends AbstractNode<NamedType> implements Type<NamedType>,
+  HasName<NamedType> {
 
   private String name;
+
+  @Override
+  public boolean isNamed() {
+    return true;
+  }
 }

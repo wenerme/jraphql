@@ -2,6 +2,8 @@ package me.wener.jraphql.lang;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
- * @since 16/03/2018
+ * @since 30/03/2018
  */
-public class TypeSystemDefinition {}
+public class IntValue extends AbstractValue<Long> implements Value {
+
+}

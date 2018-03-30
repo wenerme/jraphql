@@ -7,4 +7,6 @@ package me.wener.jraphql.lang;
 public interface HasValue<T> {
 
   T setValue(Value value);
+
+  Value getValue();
 }

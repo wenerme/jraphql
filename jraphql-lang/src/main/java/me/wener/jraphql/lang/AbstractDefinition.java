@@ -4,4 +4,6 @@ package me.wener.jraphql.lang;
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-public class AbstractDefinition extends AbstractNode implements Definition {}
+public class AbstractDefinition<T> extends AbstractNode<T> implements Definition<T> {
+
+}

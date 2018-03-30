@@ -8,7 +8,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class DirectiveDefinition extends AbstractDefinition {
+public class DirectiveDefinition extends AbstractDefinition<DirectiveDefinition> {
 
   private List<String> locations;
 }

@@ -2,13 +2,32 @@ package me.wener.jraphql.lang;
 
 import java.util.List;
 import java.util.Map;
-import lombok.Data;
+import java.util.Optional;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
- * @since 16/03/2018
+ * @since 29/03/2018
  */
-public interface Values {
+public interface Langs {
+
+  //  static Optional<String> getName(Object o) {
+  //    if (o instanceof HasName) {
+  //      return Optional.of(((HasName) o).getName());
+  //    }
+  //    return Optional.empty();
+  //  }
+
+  static <T extends HasName> Optional<T> findByName(Iterable<T> list, String name) {
+    if (list == null) {
+      return Optional.empty();
+    }
+    for (T t : list) {
+      if (t.getName().equals(name)) {
+        return Optional.of(t);
+      }
+    }
+    return Optional.empty();
+  }
 
   static Value enumOf(String v) {
     return new EnumValue().setValue(v);
@@ -18,7 +37,7 @@ public interface Values {
     return new Variable().setValue(v);
   }
 
-  static Value of(Object v) {
+  static Value valueOf(Object v) {
     if (v == null) {
       return new NullValue();
     }
@@ -41,30 +60,6 @@ public interface Values {
     if (v instanceof Map) {
       return new ObjectValue().setValue((Map) v);
     }
-    throw new RuntimeException("Unsupported value type " + clazz);
+    throw new GraphLanguageException("Unsupported value type " + clazz);
   }
-
-  @Data
-  class AbstractValue<T> extends AbstractNode implements Value {
-
-    private T value;
-  }
-
-  class IntValue extends AbstractValue<Long> implements Value {}
-
-  class FloatValue extends AbstractValue<Double> implements Value {}
-
-  class BooleanValue extends AbstractValue<Boolean> implements Value {}
-
-  class StringValue extends AbstractValue<String> implements Value {}
-
-  class NullValue extends AbstractValue<Void> implements Value {}
-
-  class EnumValue extends AbstractValue<String> implements Value {}
-
-  class ListValue extends AbstractValue<List<Value>> implements Value {}
-
-  class ObjectValue extends AbstractValue<Map<String, Value>> implements Value {}
-
-  class Variable extends AbstractValue<String> implements Value {}
 }

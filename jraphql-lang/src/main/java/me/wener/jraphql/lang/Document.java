@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class Document extends AbstractNode {
+public class Document extends AbstractNode<Document> {
 
   private List<Definition> definitions = Lists.newArrayList();
 }

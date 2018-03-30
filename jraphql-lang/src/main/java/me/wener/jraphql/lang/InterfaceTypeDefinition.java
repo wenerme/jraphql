@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class InterfaceTypeDefinition extends AbstractTypeDefinition
+public class InterfaceTypeDefinition extends AbstractTypeDefinition<InterfaceTypeDefinition>
     implements HasFieldDefinitions<InterfaceTypeDefinition> {
 
   private List<FieldDefinition> fieldDefinitions = Lists.newArrayList();

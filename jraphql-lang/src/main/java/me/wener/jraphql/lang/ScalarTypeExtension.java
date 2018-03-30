@@ -4,4 +4,6 @@ package me.wener.jraphql.lang;
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-public class ScalarTypeExtension extends AbstractTypeExtension {}
+public class ScalarTypeExtension extends AbstractTypeExtension<ScalarTypeExtension> {
+
+}

@@ -9,7 +9,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class FieldDefinition extends AbstractDefinition
+public class FieldDefinition extends AbstractDefinition<FieldDefinition>
     implements HasDescription<FieldDefinition>,
         HasName<FieldDefinition>,
         HasDirectives<FieldDefinition>,

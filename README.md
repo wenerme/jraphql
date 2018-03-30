@@ -1,6 +1,7 @@
 # JraphQL
 Java with GraphQL
 
+* Maven [me.wener.jraphql](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22me.wener.jraphql%22)
 
 Module | Description
 -------|-----------

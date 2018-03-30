@@ -7,4 +7,6 @@ package me.wener.jraphql.lang;
 public interface HasDefaultValue<T> {
 
   T setDefaultValue(Value value);
+
+  Value getDefaultValue();
 }

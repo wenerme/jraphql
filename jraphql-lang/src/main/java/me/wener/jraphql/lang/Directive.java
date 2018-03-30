@@ -8,7 +8,8 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class Directive extends AbstractNode implements HasName<Directive>, HasArguments<Directive> {
+public class Directive extends AbstractNode<Directive>
+  implements HasName<Directive>, HasArguments<Directive> {
 
   private String name;
   private List<Argument> arguments;

@@ -9,4 +9,6 @@ import java.util.List;
 public interface HasEnumValueDefinitions<T> {
 
   T setEnumValueDefinitions(List<EnumValueDefinition> enumValueDefinitions);
+
+  List<EnumValueDefinition> getEnumValueDefinitions();
 }

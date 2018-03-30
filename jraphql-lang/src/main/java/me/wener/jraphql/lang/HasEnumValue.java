@@ -7,4 +7,6 @@ package me.wener.jraphql.lang;
 public interface HasEnumValue<T> {
 
   T setEnumValue(String s);
+
+  String getEnumValue();
 }

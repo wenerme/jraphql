@@ -9,4 +9,6 @@ import java.util.List;
 public interface HasInterfaces<T> {
 
   T setInterfaces(List<String> interfaces);
+
+  List<String> getInterfaces();
 }

@@ -7,4 +7,6 @@ package me.wener.jraphql.lang;
 public interface HasDescription<T> {
 
   T setDescription(String s);
+
+  String getDescription();
 }

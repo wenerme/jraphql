@@ -7,4 +7,6 @@ package me.wener.jraphql.lang;
 public interface HasType<T> {
 
   T setType(Type s);
+
+  Type getType();
 }

@@ -8,7 +8,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class InputValueDefinition extends AbstractDefinition
+public class InputValueDefinition extends AbstractDefinition<InputValueDefinition>
     implements HasName<InputValueDefinition>,
         HasDescription<InputValueDefinition>,
         HasDirectives<InputValueDefinition>,

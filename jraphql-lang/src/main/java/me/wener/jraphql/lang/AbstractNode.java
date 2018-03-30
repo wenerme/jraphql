@@ -8,9 +8,20 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class AbstractNode implements Node {
+public class AbstractNode<T> implements Node<T> {
 
   protected SourceLocation sourceLocation;
   protected List<Comment> comments;
-  //  protected List<Node> children;
+
+  @Override
+  public T setSourceLocation(SourceLocation sourceLocation) {
+    this.sourceLocation = sourceLocation;
+    return (T) this;
+  }
+
+  @Override
+  public T setComments(List<Comment> comments) {
+    this.comments = comments;
+    return (T) this;
+  }
 }

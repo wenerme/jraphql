@@ -8,8 +8,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class AbstractTypeExtension<T> extends AbstractDefinition
-    implements TypeExtension, HasName<T>, HasExtendTypeName<T>, HasDirectives<T> {
+public class AbstractTypeExtension<T> extends AbstractDefinition<T> implements TypeExtension<T> {
 
   protected String name;
   protected String extendTypeName;
