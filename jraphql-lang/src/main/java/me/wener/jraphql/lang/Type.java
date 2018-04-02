@@ -17,4 +17,17 @@ public interface Type<T> extends Node<T> {
   default boolean isNamed() {
     return false;
   }
+
+  default Type getType() {
+    return null;
+  }
+
+  /** @return Deepest type name */
+  default String resolveTypeName() {
+    if (this.isNamed()) {
+      return this.getName();
+    } else {
+      return this.getType().resolveTypeName();
+    }
+  }
 }

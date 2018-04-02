@@ -6,6 +6,7 @@ import me.wener.jraphql.parser.antlr.GraphQLLangVisitor;
 import me.wener.jraphql.parser.antlr.GraphQLLexer;
 import me.wener.jraphql.parser.antlr.GraphQLParser;
 import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.DiagnosticErrorListener;
 
@@ -16,11 +17,29 @@ import org.antlr.v4.runtime.DiagnosticErrorListener;
 public class AntlrGraphParser implements GraphParser {
 
   public Document parse(String content) {
-    GraphQLLexer lexer = new GraphQLLexer(CharStreams.fromString(content));
+    CodePointCharStream input = CharStreams.fromString(content);
+    GraphQLParser parser = buildParser(input);
+    return new GraphQLLangVisitor().visitDocument(parser.document());
+  }
+
+  public Document parseQuery(String content) {
+    CodePointCharStream input = CharStreams.fromString(content);
+    GraphQLParser parser = buildParser(input);
+    return new GraphQLLangVisitor().visitExecutableDocument(parser.executableDocument());
+  }
+
+  public Document parseTypeSystem(String content) {
+    CodePointCharStream input = CharStreams.fromString(content);
+    GraphQLParser parser = buildParser(input);
+    return new GraphQLLangVisitor().visitTypeSystemDocument(parser.typeSystemDocument());
+  }
+
+  private GraphQLParser buildParser(CodePointCharStream input) {
+    GraphQLLexer lexer = new GraphQLLexer(input);
     CommonTokenStream stream = new CommonTokenStream(lexer);
     GraphQLParser parser = new GraphQLParser(stream);
     parser.addErrorListener(new DiagnosticErrorListener(true));
     parser.setBuildParseTree(true);
-    return new GraphQLLangVisitor().visitDocument(parser.document());
+    return parser;
   }
 }

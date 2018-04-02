@@ -1,5 +1,6 @@
 package me.wener.jraphql.lang;
 
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -8,9 +9,9 @@ import lombok.Data;
  */
 @Data
 public class NonNullType extends AbstractNode<ListType>
-  implements Type<ListType>, HasType<NonNullType> {
+    implements Type<ListType>, HasType<NonNullType> {
 
-  private Type type;
+  @NotNull private Type type;
 
   @Override
   public boolean isNonNull() {

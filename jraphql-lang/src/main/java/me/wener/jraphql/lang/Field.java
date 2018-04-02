@@ -10,15 +10,14 @@ import lombok.Data;
  */
 @Data
 public class Field extends AbstractNode<Field>
-  implements Selection<Field>,
-  HasName<Field>,
-  HasArguments<Field>,
-  HasDirectives<Field>,
-  HasSelectionSet<Field> {
+    implements Selection<Field>,
+        HasName<Field>,
+        HasArguments<Field>,
+        HasDirectives<Field>,
+        HasSelectionSet<Field> {
 
   private String alias;
-  @NotNull
-  private String name;
+  @NotNull private String name;
   private List<Argument> arguments;
   private List<Directive> directives;
   private SelectionSet selectionSet;

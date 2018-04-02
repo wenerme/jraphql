@@ -6,8 +6,7 @@ package me.wener.jraphql.lang;
  */
 public class GraphLanguageException extends RuntimeException {
 
-  public GraphLanguageException() {
-  }
+  public GraphLanguageException() {}
 
   public GraphLanguageException(String message) {
     super(message);

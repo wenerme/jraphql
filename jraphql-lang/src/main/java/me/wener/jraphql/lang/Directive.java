@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 public class Directive extends AbstractNode<Directive>
-  implements HasName<Directive>, HasArguments<Directive> {
+    implements HasName<Directive>, HasArguments<Directive> {
 
   private String name;
   private List<Argument> arguments;

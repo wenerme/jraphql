@@ -8,7 +8,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class AbstractTypeDefinition<T> extends AbstractDefinition<T> implements TypeDefinition<T> {
+class AbstractTypeDefinition<T> extends AbstractDefinition<T> implements TypeDefinition<T> {
 
   protected String name;
   protected String description;

@@ -63,6 +63,15 @@ name
 document
    : definition+ EOF
    ;
+//extension
+executableDocument
+   : executableDefinition+ EOF
+   ;
+
+//extension
+typeSystemDocument
+   : typeSystemDefinition+ EOF
+   ;
 
 definition
   : executableDefinition

@@ -5,6 +5,4 @@ package me.wener.jraphql.lang;
  * @since 16/03/2018
  */
 public interface TypeDefinition<T>
-  extends Definition<T>, HasName<T>, HasDescription<T>, HasDirectives<T> {
-
-}
+    extends Definition<T>, HasName<T>, HasDescription<T>, HasDirectives<T> {}

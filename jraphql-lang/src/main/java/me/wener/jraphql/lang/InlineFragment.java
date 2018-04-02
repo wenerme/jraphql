@@ -10,13 +10,12 @@ import lombok.Data;
  */
 @Data
 public class InlineFragment extends AbstractNode<InlineFragment>
-  implements Selection<InlineFragment>,
-  HasDirectives<InlineFragment>,
-  HasSelectionSet<InlineFragment>,
-  HasTypeCondition<InlineFragment> {
+    implements Selection<InlineFragment>,
+        HasDirectives<InlineFragment>,
+        HasSelectionSet<InlineFragment>,
+        HasTypeCondition<InlineFragment> {
 
   private String typeCondition;
   private List<Directive> directives;
-  @NotNull
-  private SelectionSet selectionSet;
+  @NotNull private SelectionSet selectionSet;
 }

@@ -62,4 +62,37 @@ public interface Langs {
     }
     throw new GraphLanguageException("Unsupported value type " + clazz);
   }
+
+  static boolean isTypeDefinition(Node node) {
+    return node instanceof TypeDefinition;
+  }
+
+  static boolean isTypeExtension(Node node) {
+    return node instanceof TypeExtension;
+  }
+
+  static DefinitionKind getDefinitionKind(Node node) {
+    if (node instanceof ScalarTypeDefinition || node instanceof ScalarTypeExtension) {
+      return DefinitionKind.SCALAR;
+    }
+    if (node instanceof InterfaceTypeDefinition || node instanceof InterfaceTypeExtension) {
+      return DefinitionKind.INTERFACE;
+    }
+    if (node instanceof UnionTypeDefinition || node instanceof UnionTypeExtension) {
+      return DefinitionKind.UNION;
+    }
+    if (node instanceof ObjectTypeDefinition || node instanceof ObjectTypeExtension) {
+      return DefinitionKind.OBJECT;
+    }
+    if (node instanceof InputObjectTypeDefinition || node instanceof InputObjectTypeExtension) {
+      return DefinitionKind.INPUT;
+    }
+    if (node instanceof EnumTypeDefinition || node instanceof EnumTypeExtension) {
+      return DefinitionKind.ENUM;
+    }
+    if (node instanceof SchemaDefinition) {
+      return DefinitionKind.SCHEMA;
+    }
+    return DefinitionKind.UNSPECIFIED;
+  }
 }

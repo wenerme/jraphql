@@ -8,7 +8,7 @@ import lombok.Data;
  * @since 16/03/2018
  */
 @Data
-public class AbstractNode<T> implements Node<T> {
+class AbstractNode<T> implements Node<T> {
 
   protected SourceLocation sourceLocation;
   protected List<Comment> comments;

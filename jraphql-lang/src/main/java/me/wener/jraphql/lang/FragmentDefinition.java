@@ -10,16 +10,13 @@ import lombok.Data;
  */
 @Data
 public class FragmentDefinition extends AbstractDefinition<FragmentDefinition>
-  implements HasDirectives<FragmentDefinition>,
-  HasFragmentName<FragmentDefinition>,
-  HasTypeCondition<FragmentDefinition>,
-  HasSelectionSet<FragmentDefinition> {
+    implements HasDirectives<FragmentDefinition>,
+        HasFragmentName<FragmentDefinition>,
+        HasTypeCondition<FragmentDefinition>,
+        HasSelectionSet<FragmentDefinition> {
 
   protected List<Directive> directives;
-  @NotNull
-  private String fragmentName;
-  @NotNull
-  private String typeCondition;
-  @NotNull
-  private SelectionSet selectionSet;
+  @NotNull private String fragmentName;
+  @NotNull private String typeCondition;
+  @NotNull private SelectionSet selectionSet;
 }

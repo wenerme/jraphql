@@ -10,9 +10,8 @@ import lombok.Data;
  */
 @Data
 public class FragmentSpread extends AbstractNode<FragmentSpread>
-  implements Selection<FragmentSpread>, HasDirectives<FragmentSpread> {
+    implements Selection<FragmentSpread>, HasDirectives<FragmentSpread> {
 
-  @NotNull
-  private String fragmentName;
+  @NotNull private String fragmentName;
   private List<Directive> directives;
 }

@@ -9,9 +9,9 @@ import lombok.Data;
  */
 @Data
 public class OperationDefinition extends AbstractDefinition<OperationDefinition>
-  implements HasName<OperationDefinition>,
-  HasDirectives<OperationDefinition>,
-  HasSelectionSet<OperationDefinition> {
+    implements HasName<OperationDefinition>,
+        HasDirectives<OperationDefinition>,
+        HasSelectionSet<OperationDefinition> {
 
   private String operationType;
   private String name;

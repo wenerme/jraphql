@@ -77,6 +77,8 @@ import me.wener.jraphql.parser.antlr.GraphQLParser.EnumTypeExtensionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.EnumValueContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.EnumValueDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.EnumValuesDefinitionContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.ExecutableDefinitionContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.ExecutableDocumentContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FieldContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FieldDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FieldsDefinitionContext;
@@ -113,6 +115,8 @@ import me.wener.jraphql.parser.antlr.GraphQLParser.SelectionSetContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.StringValueContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.TypeConditionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.TypeContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.TypeSystemDefinitionContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.TypeSystemDocumentContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.UnionMemberTypesContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ValueContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.VariableContext;
@@ -134,9 +138,9 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     }
     Node node = super.visit(tree);
     log.debug(
-      "Visit {} -> {}",
-      tree.getClass().getSimpleName(),
-      node == null ? null : node.getClass().getSimpleName());
+        "Visit {} -> {}",
+        tree.getClass().getSimpleName(),
+        node == null ? null : node.getClass().getSimpleName());
     return node;
   }
 
@@ -156,6 +160,28 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     return node;
   }
 
+  @Override
+  public Document visitExecutableDocument(ExecutableDocumentContext ctx) {
+    Document node = extract(ctx, new Document());
+    List<Definition> definitions = Lists.newArrayList();
+    for (ExecutableDefinitionContext context : ctx.executableDefinition()) {
+      definitions.add((Definition) visit(context));
+    }
+    node.setDefinitions(definitions);
+    return node;
+  }
+
+  @Override
+  public Document visitTypeSystemDocument(TypeSystemDocumentContext ctx) {
+    Document node = extract(ctx, new Document());
+    List<Definition> definitions = Lists.newArrayList();
+    for (TypeSystemDefinitionContext context : ctx.typeSystemDefinition()) {
+      definitions.add((Definition) visit(context));
+    }
+    node.setDefinitions(definitions);
+    return node;
+  }
+
   // region TypeDefinition
   @Override
   public Node visitScalarTypeDefinition(ScalarTypeDefinitionContext ctx) {
@@ -169,7 +195,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public BypassNode<List<EnumValueDefinition>> visitEnumValuesDefinition(
-    EnumValuesDefinitionContext ctx) {
+      EnumValuesDefinitionContext ctx) {
     List<EnumValueDefinition> list = Lists.newArrayList();
     if (ctx != null) {
       for (EnumValueDefinitionContext context : ctx.enumValueDefinition()) {
@@ -246,7 +272,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public NonNullType visitNonNullType(NonNullTypeContext ctx) {
-    NonNullType node = new NonNullType();
+    NonNullType node = extract(ctx, new NonNullType());
     if (ctx.namedType() != null) {
       node.setType(visitNamedType(ctx.namedType()));
     } else {
@@ -338,7 +364,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public BypassNode<List<InputValueDefinition>> visitArgumentsDefinition(
-    ArgumentsDefinitionContext ctx) {
+      ArgumentsDefinitionContext ctx) {
     List<InputValueDefinition> list = Lists.newArrayList();
     if (ctx != null) {
       for (InputValueDefinitionContext context : ctx.inputValueDefinition()) {
@@ -511,65 +537,65 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
       throw new RuntimeException("require node");
     }
     node.setSourceLocation(
-      new SourceLocation()
-        .setLine(ctx.getStart().getLine())
-        .setColumn(ctx.getStart().getCharPositionInLine()));
+        new SourceLocation()
+            .setLine(ctx.getStart().getLine())
+            .setColumn(ctx.getStart().getCharPositionInLine()));
 
     // TODO comments
 
     if (node instanceof HasArguments) {
       ((HasArguments) node)
-        .setArguments(visitArguments(ctx.getRuleContext(ArgumentsContext.class, 0)).getValue());
+          .setArguments(visitArguments(ctx.getRuleContext(ArgumentsContext.class, 0)).getValue());
     }
     if (node instanceof HasArgumentDefinitions) {
       ((HasArgumentDefinitions) node)
-        .setArgumentDefinitions(
-          visitArgumentsDefinition(ctx.getRuleContext(ArgumentsDefinitionContext.class, 0))
-            .getValue());
+          .setArgumentDefinitions(
+              visitArgumentsDefinition(ctx.getRuleContext(ArgumentsDefinitionContext.class, 0))
+                  .getValue());
     }
 
     if (node instanceof HasDefaultValue) {
       ((HasDefaultValue) node)
-        .setDefaultValue((Value) visit(ctx.getRuleContext(DefaultValueContext.class, 0)));
+          .setDefaultValue((Value) visit(ctx.getRuleContext(DefaultValueContext.class, 0)));
     }
     if (node instanceof HasDescription) {
       ((HasDescription) node)
-        .setDescription(extractString(ctx.getRuleContext(DescriptionContext.class, 0)));
+          .setDescription(extractString(ctx.getRuleContext(DescriptionContext.class, 0)));
     }
     if (node instanceof HasDirectives) {
       ((HasDirectives) node)
-        .setDirectives(
-          visitDirectives(ctx.getRuleContext(DirectivesContext.class, 0)).getValue());
+          .setDirectives(
+              visitDirectives(ctx.getRuleContext(DirectivesContext.class, 0)).getValue());
     }
     if (node instanceof HasEnumValue) {
       ((HasEnumValue) node)
-        .setEnumValue(extractText(ctx.getRuleContext(EnumValueContext.class, 0)));
+          .setEnumValue(extractText(ctx.getRuleContext(EnumValueContext.class, 0)));
     }
     if (node instanceof HasEnumValueDefinitions) {
       ((HasEnumValueDefinitions) node)
-        .setEnumValueDefinitions(
-          visitEnumValuesDefinition(ctx.getRuleContext(EnumValuesDefinitionContext.class, 0))
-            .getValue());
+          .setEnumValueDefinitions(
+              visitEnumValuesDefinition(ctx.getRuleContext(EnumValuesDefinitionContext.class, 0))
+                  .getValue());
     }
     if (node instanceof HasFieldDefinitions) {
       ((HasFieldDefinitions) node)
-        .setFieldDefinitions(
-          visitFieldsDefinition(ctx.getRuleContext(FieldsDefinitionContext.class, 0))
-            .getValue());
+          .setFieldDefinitions(
+              visitFieldsDefinition(ctx.getRuleContext(FieldsDefinitionContext.class, 0))
+                  .getValue());
     }
     if (node instanceof HasFragmentName) {
       ((HasFragmentName) node)
-        .setFragmentName(extractText(ctx.getRuleContext(FragmentNameContext.class, 0)));
+          .setFragmentName(extractText(ctx.getRuleContext(FragmentNameContext.class, 0)));
     }
     if (node instanceof HasTypeCondition) {
       ((HasTypeCondition) node)
-        .setTypeCondition(extractText(ctx.getRuleContext(TypeConditionContext.class, 0)));
+          .setTypeCondition(extractText(ctx.getRuleContext(TypeConditionContext.class, 0)));
     }
     if (node instanceof HasInterfaces) {
       ((HasInterfaces) node)
-        .setInterfaces(
-          visitImplementsInterfaces(ctx.getRuleContext(ImplementsInterfacesContext.class, 0))
-            .getValue());
+          .setInterfaces(
+              visitImplementsInterfaces(ctx.getRuleContext(ImplementsInterfacesContext.class, 0))
+                  .getValue());
     }
     if (node instanceof HasName) {
       ((HasName) node).setName(extractText(ctx.getRuleContext(NameContext.class, 0)));
@@ -583,7 +609,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     }
     if (node instanceof HasSelectionSet) {
       ((HasSelectionSet) node)
-        .setSelectionSet(visitSelectionSet(ctx.getRuleContext(SelectionSetContext.class, 0)));
+          .setSelectionSet(visitSelectionSet(ctx.getRuleContext(SelectionSetContext.class, 0)));
     }
     if (node instanceof HasType) {
       ((HasType) node).setType((Type) visit(ctx.getRuleContext(TypeContext.class, 0)));

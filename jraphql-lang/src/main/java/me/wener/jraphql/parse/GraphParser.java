@@ -9,4 +9,8 @@ import me.wener.jraphql.lang.Document;
 public interface GraphParser {
 
   Document parse(String content);
+
+  Document parseQuery(String content);
+
+  Document parseTypeSystem(String content);
 }

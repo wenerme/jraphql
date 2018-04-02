@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @Data
 public class VariableDefinition extends AbstractDefinition<VariableDefinition>
-  implements HasType<VariableDefinition>, HasDefaultValue<VariableDefinition> {
+    implements HasType<VariableDefinition>, HasDefaultValue<VariableDefinition> {
 
   private String variableName;
   private Type type;

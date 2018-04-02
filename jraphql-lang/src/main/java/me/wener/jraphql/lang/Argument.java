@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @Data
 public class Argument extends AbstractNode<Argument>
-  implements HasName<Argument>, HasValue<Argument> {
+    implements HasName<Argument>, HasValue<Argument> {
 
   private String name;
   private Value value;

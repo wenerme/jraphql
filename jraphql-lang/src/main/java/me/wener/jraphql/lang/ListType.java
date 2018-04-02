@@ -1,5 +1,6 @@
 package me.wener.jraphql.lang;
 
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -9,7 +10,7 @@ import lombok.Data;
 @Data
 public class ListType extends AbstractNode<ListType> implements Type<ListType>, HasType<ListType> {
 
-  private Type type;
+  @NotNull private Type type;
 
   @Override
   public boolean isList() {

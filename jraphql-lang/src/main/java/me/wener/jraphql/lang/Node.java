@@ -17,13 +17,6 @@ public interface Node<T> {
 
   T setComments(List<Comment> comments);
 
-  //  default boolean isTypeDefinition() {
-  //    return this instanceof TypeDefinition;
-  //  }
-  //  default boolean isTypeExtension() {
-  //    return this instanceof TypeExtension;
-  //  }
-
   /**
    * Node may contain a name
    *
