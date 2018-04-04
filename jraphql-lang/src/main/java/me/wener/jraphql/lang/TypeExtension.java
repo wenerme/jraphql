@@ -1,7 +1,19 @@
 package me.wener.jraphql.lang;
 
+import java.util.List;
+
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-public interface TypeExtension<T> extends Definition<T>, HasExtendTypeName<T>, HasDirectives<T> {}
+public interface TypeExtension extends DocumentDefinition {
+  String getName();
+
+  String getExtendTypeName();
+
+  List<Directive> getDirectives();
+
+  default TypeDefinitionKind getKind() {
+    return Langs.getTypeDefinitionKind(this);
+  }
+}

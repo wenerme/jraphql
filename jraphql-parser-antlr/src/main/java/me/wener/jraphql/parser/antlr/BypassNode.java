@@ -24,17 +24,7 @@ class BypassNode<T> implements me.wener.jraphql.lang.Node {
   }
 
   @Override
-  public Object setSourceLocation(SourceLocation sourceLocation) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public List<Comment> getComments() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Object setComments(List list) {
     throw new UnsupportedOperationException();
   }
 }

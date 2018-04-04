@@ -1,16 +1,34 @@
 package me.wener.jraphql.lang;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
 import java.util.List;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import me.wener.jraphql.lang.Builders.BuildFieldDefinitions;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-@Data
-public class InterfaceTypeDefinition extends AbstractTypeDefinition<InterfaceTypeDefinition>
-    implements HasFieldDefinitions<InterfaceTypeDefinition> {
+@Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = InterfaceTypeDefinition.InterfaceTypeDefinitionBuilder.class)
+public class InterfaceTypeDefinition implements TypeDefinition {
 
-  private List<FieldDefinition> fieldDefinitions = Lists.newArrayList();
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+  @NonNull private String name;
+  private String description;
+  @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
+
+  @NonNull @Builder.Default
+  private List<FieldDefinition> fieldDefinitions = Collections.emptyList();
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class InterfaceTypeDefinitionBuilder
+      implements Builders.BuildTypeDefinition<InterfaceTypeDefinitionBuilder>,
+          BuildFieldDefinitions<InterfaceTypeDefinitionBuilder> {}
 }

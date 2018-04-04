@@ -1,20 +1,27 @@
 package me.wener.jraphql.lang;
 
-import javax.validation.constraints.NotNull;
-import lombok.Data;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
+import java.util.List;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 30/03/2018
  */
-@Data
-public class NamedType extends AbstractNode<NamedType>
-    implements Type<NamedType>, HasName<NamedType> {
+@Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = NamedType.NamedTypeBuilder.class)
+public class NamedType implements Type {
 
-  @NotNull private String name;
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+  @NonNull private String name;
 
-  @Override
-  public boolean isNamed() {
-    return true;
-  }
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class NamedTypeBuilder
+      implements Builders.BuildNode<NamedTypeBuilder>, Builders.BuildName<NamedTypeBuilder> {}
 }

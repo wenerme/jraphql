@@ -1,7 +1,24 @@
 package me.wener.jraphql.lang;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
+import java.util.List;
+import lombok.Builder;
+import lombok.NonNull;
+
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 30/03/2018
  */
-public class FloatValue extends AbstractValue<Double> implements Value {}
+@lombok.Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = FloatValue.FloatValueBuilder.class)
+public class FloatValue implements Value {
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+  @NonNull private Float value;
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class FloatValueBuilder implements Builders.BuildNode<FloatValueBuilder> {}
+}

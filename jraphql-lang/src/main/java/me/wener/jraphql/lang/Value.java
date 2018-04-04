@@ -5,10 +5,11 @@ package me.wener.jraphql.lang;
  * @since 16/03/2018
  */
 public interface Value extends Node {
-
-  default boolean isVariable() {
-    return this instanceof Variable;
+  default ValueKind getKind() {
+    return Langs.getValueKind(this);
   }
 
-  <T> T getValue();
+  default Object getValue() {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -1,55 +1,61 @@
 package me.wener.jraphql.parser.antlr;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import me.wener.jraphql.lang.Argument;
-import me.wener.jraphql.lang.Definition;
+import me.wener.jraphql.lang.BooleanValue;
+import me.wener.jraphql.lang.Builders;
+import me.wener.jraphql.lang.Builders.BuildArgumentDefinitions;
+import me.wener.jraphql.lang.Builders.BuildArguments;
+import me.wener.jraphql.lang.Builders.BuildDefaultValue;
+import me.wener.jraphql.lang.Builders.BuildDescription;
+import me.wener.jraphql.lang.Builders.BuildDirectives;
+import me.wener.jraphql.lang.Builders.BuildEnumValue;
+import me.wener.jraphql.lang.Builders.BuildEnumValueDefinitions;
+import me.wener.jraphql.lang.Builders.BuildExtendTypeName;
+import me.wener.jraphql.lang.Builders.BuildFieldDefinitions;
+import me.wener.jraphql.lang.Builders.BuildInterfaces;
+import me.wener.jraphql.lang.Builders.BuildName;
+import me.wener.jraphql.lang.Builders.BuildSelectionSet;
+import me.wener.jraphql.lang.Builders.BuildType;
+import me.wener.jraphql.lang.Builders.BuildTypeCondition;
+import me.wener.jraphql.lang.Builders.BuildValue;
 import me.wener.jraphql.lang.Directive;
 import me.wener.jraphql.lang.DirectiveDefinition;
 import me.wener.jraphql.lang.Document;
+import me.wener.jraphql.lang.DocumentDefinition;
 import me.wener.jraphql.lang.EnumTypeDefinition;
 import me.wener.jraphql.lang.EnumTypeExtension;
+import me.wener.jraphql.lang.EnumValue;
 import me.wener.jraphql.lang.EnumValueDefinition;
 import me.wener.jraphql.lang.Field;
 import me.wener.jraphql.lang.FieldDefinition;
+import me.wener.jraphql.lang.FloatValue;
 import me.wener.jraphql.lang.FragmentDefinition;
 import me.wener.jraphql.lang.FragmentSpread;
 import me.wener.jraphql.lang.GraphLanguageException;
-import me.wener.jraphql.lang.HasArgumentDefinitions;
-import me.wener.jraphql.lang.HasArguments;
-import me.wener.jraphql.lang.HasDefaultValue;
-import me.wener.jraphql.lang.HasDescription;
-import me.wener.jraphql.lang.HasDirectives;
-import me.wener.jraphql.lang.HasEnumValue;
-import me.wener.jraphql.lang.HasEnumValueDefinitions;
-import me.wener.jraphql.lang.HasExtendTypeName;
-import me.wener.jraphql.lang.HasFieldDefinitions;
-import me.wener.jraphql.lang.HasFragmentName;
-import me.wener.jraphql.lang.HasInterfaces;
-import me.wener.jraphql.lang.HasName;
-import me.wener.jraphql.lang.HasSelectionSet;
-import me.wener.jraphql.lang.HasType;
-import me.wener.jraphql.lang.HasTypeCondition;
-import me.wener.jraphql.lang.HasValue;
 import me.wener.jraphql.lang.InlineFragment;
 import me.wener.jraphql.lang.InputObjectTypeDefinition;
 import me.wener.jraphql.lang.InputObjectTypeExtension;
 import me.wener.jraphql.lang.InputValueDefinition;
+import me.wener.jraphql.lang.IntValue;
 import me.wener.jraphql.lang.InterfaceTypeDefinition;
 import me.wener.jraphql.lang.InterfaceTypeExtension;
-import me.wener.jraphql.lang.Langs;
 import me.wener.jraphql.lang.ListType;
+import me.wener.jraphql.lang.ListValue;
 import me.wener.jraphql.lang.NamedType;
 import me.wener.jraphql.lang.Node;
 import me.wener.jraphql.lang.NonNullType;
 import me.wener.jraphql.lang.NullValue;
 import me.wener.jraphql.lang.ObjectTypeDefinition;
 import me.wener.jraphql.lang.ObjectTypeExtension;
+import me.wener.jraphql.lang.ObjectValue;
 import me.wener.jraphql.lang.OperationDefinition;
 import me.wener.jraphql.lang.ScalarTypeDefinition;
 import me.wener.jraphql.lang.ScalarTypeExtension;
@@ -57,8 +63,10 @@ import me.wener.jraphql.lang.SchemaDefinition;
 import me.wener.jraphql.lang.Selection;
 import me.wener.jraphql.lang.SelectionSet;
 import me.wener.jraphql.lang.SourceLocation;
+import me.wener.jraphql.lang.StringValue;
 import me.wener.jraphql.lang.Type;
 import me.wener.jraphql.lang.Value;
+import me.wener.jraphql.lang.Variable;
 import me.wener.jraphql.lang.VariableDefinition;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ArgumentContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ArgumentsContext;
@@ -84,7 +92,6 @@ import me.wener.jraphql.parser.antlr.GraphQLParser.FieldDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FieldsDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FloatValueContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FragmentDefinitionContext;
-import me.wener.jraphql.parser.antlr.GraphQLParser.FragmentNameContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.FragmentSpreadContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.GraphqlContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ImplementsInterfacesContext;
@@ -129,7 +136,11 @@ import org.antlr.v4.runtime.tree.ParseTree;
  * @since 16/03/2018
  */
 @Slf4j
+@Setter
+@Getter
 public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBaseVisitor<Node> {
+
+  private String source = "inline";
 
   @Override
   public Node visit(ParseTree tree) {
@@ -151,375 +162,368 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public Document visitDocument(DocumentContext ctx) {
-    Document node = extract(ctx, new Document());
-    List<Definition> definitions = Lists.newArrayList();
+    Document.DocumentBuilder node = extract(ctx, Document.builder());
+    ImmutableList.Builder<DocumentDefinition> definitions = ImmutableList.builder();
     for (DefinitionContext context : ctx.definition()) {
-      definitions.add((Definition) visit(context));
+      definitions.add((DocumentDefinition) visit(context));
     }
-    node.setDefinitions(definitions);
-    return node;
+    node.definitions(definitions.build());
+    return node.build();
   }
 
   @Override
   public Document visitExecutableDocument(ExecutableDocumentContext ctx) {
-    Document node = extract(ctx, new Document());
-    List<Definition> definitions = Lists.newArrayList();
+    Document.DocumentBuilder node = extract(ctx, Document.builder());
+    ImmutableList.Builder<DocumentDefinition> definitions = ImmutableList.builder();
     for (ExecutableDefinitionContext context : ctx.executableDefinition()) {
-      definitions.add((Definition) visit(context));
+      definitions.add((DocumentDefinition) visit(context));
     }
-    node.setDefinitions(definitions);
-    return node;
+    node.definitions(definitions.build());
+    return node.build();
   }
 
   @Override
   public Document visitTypeSystemDocument(TypeSystemDocumentContext ctx) {
-    Document node = extract(ctx, new Document());
-    List<Definition> definitions = Lists.newArrayList();
+    Document.DocumentBuilder node = extract(ctx, Document.builder());
+    ImmutableList.Builder<DocumentDefinition> definitions = ImmutableList.builder();
     for (TypeSystemDefinitionContext context : ctx.typeSystemDefinition()) {
-      definitions.add((Definition) visit(context));
+      definitions.add((DocumentDefinition) visit(context));
     }
-    node.setDefinitions(definitions);
-    return node;
+    node.definitions(definitions.build());
+    return node.build();
   }
 
   // region TypeDefinition
   @Override
   public Node visitScalarTypeDefinition(ScalarTypeDefinitionContext ctx) {
-    return extract(ctx, new ScalarTypeDefinition());
+    return extract(ctx, ScalarTypeDefinition.builder()).build();
   }
 
   @Override
   public Node visitObjectTypeDefinition(ObjectTypeDefinitionContext ctx) {
-    return extract(ctx, new ObjectTypeDefinition());
+    return extract(ctx, ObjectTypeDefinition.builder()).build();
   }
 
   @Override
   public BypassNode<List<EnumValueDefinition>> visitEnumValuesDefinition(
       EnumValuesDefinitionContext ctx) {
-    List<EnumValueDefinition> list = Lists.newArrayList();
+    ImmutableList.Builder<EnumValueDefinition> list = ImmutableList.builder();
     if (ctx != null) {
       for (EnumValueDefinitionContext context : ctx.enumValueDefinition()) {
         list.add(visitEnumValueDefinition(context));
       }
     }
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   @Override
   public EnumValueDefinition visitEnumValueDefinition(EnumValueDefinitionContext ctx) {
-    return extract(ctx, new EnumValueDefinition());
+    return extract(ctx, EnumValueDefinition.builder()).build();
   }
   // endregion
 
   @Override
   public Node visitScalarTypeExtension(ScalarTypeExtensionContext ctx) {
-    return extract(ctx, new ScalarTypeExtension());
+    return extract(ctx, ScalarTypeExtension.builder()).build();
   }
 
   @Override
   public Node visitInterfaceTypeDefinition(InterfaceTypeDefinitionContext ctx) {
-    return extract(ctx, new InterfaceTypeDefinition());
+    return extract(ctx, InterfaceTypeDefinition.builder()).build();
   }
 
   @Override
   public Node visitSchemaDefinition(SchemaDefinitionContext ctx) {
-    SchemaDefinition node = new SchemaDefinition();
+    SchemaDefinition.SchemaDefinitionBuilder node = SchemaDefinition.builder();
     extract(ctx, node);
     for (OperationTypeDefinitionContext context : ctx.operationTypeDefinition()) {
       switch (context.operationType().getText()) {
         case "query":
-          node.setQueryTypeName(context.namedType().getText());
+          node.queryTypeName(context.namedType().getText());
           break;
         case "mutation":
-          node.setMutationTypeName(context.namedType().getText());
+          node.mutationTypeName(context.namedType().getText());
           break;
         case "subscription":
-          node.setSubscriptionTypeName(context.namedType().getText());
+          node.subscriptionTypeName(context.namedType().getText());
           break;
         default:
           throw new GraphLanguageException("Unsupported operation type");
       }
     }
-    return node;
+    return node.build();
   }
 
   @Override
   public Node visitEnumTypeDefinition(EnumTypeDefinitionContext ctx) {
-    return extract(ctx, new EnumTypeDefinition());
+    return extract(ctx, EnumTypeDefinition.builder()).build();
   }
 
   @Override
   public BypassNode<List<String>> visitUnionMemberTypes(UnionMemberTypesContext ctx) {
-    List<String> list = Lists.newArrayList();
+    ImmutableList.Builder<String> list = ImmutableList.builder();
     UnionMemberTypesContext self = ctx;
     while (self != null) {
       list.add(self.namedType().getText());
       self = self.unionMemberTypes();
     }
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   // region Type
   @Override
   public NamedType visitNamedType(NamedTypeContext ctx) {
-    return extract(ctx, new NamedType());
+    return extract(ctx, NamedType.builder()).build();
   }
 
   @Override
   public ListType visitListType(ListTypeContext ctx) {
-    return extract(ctx, new ListType());
+    return extract(ctx, ListType.builder()).build();
   }
 
   @Override
   public NonNullType visitNonNullType(NonNullTypeContext ctx) {
-    NonNullType node = extract(ctx, new NonNullType());
+    NonNullType.NonNullTypeBuilder builder = extract(ctx, NonNullType.builder());
     if (ctx.namedType() != null) {
-      node.setType(visitNamedType(ctx.namedType()));
+      builder.type(visitNamedType(ctx.namedType()));
     } else {
-      node.setType(visitListType(ctx.listType()));
+      builder.type(visitListType(ctx.listType()));
     }
-    return node;
+    return builder.build();
   }
   // endregion
 
   @Override
   public BypassNode<List<String>> visitImplementsInterfaces(ImplementsInterfacesContext ctx) {
-    List<String> list = Lists.newArrayList();
+    ImmutableList.Builder<String> list = ImmutableList.builder();
     ImplementsInterfacesContext self = ctx;
     while (self != null) {
       list.add(self.namedType().getText());
       self = self.implementsInterfaces();
     }
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   @Override
   public BypassNode<List<FieldDefinition>> visitFieldsDefinition(FieldsDefinitionContext ctx) {
-    List<FieldDefinition> list = Lists.newArrayList();
+    ImmutableList.Builder<FieldDefinition> list = ImmutableList.builder();
     if (ctx != null) {
       for (FieldDefinitionContext context : ctx.fieldDefinition()) {
         list.add(visitFieldDefinition(context));
       }
     }
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   @Override
   public FieldDefinition visitFieldDefinition(FieldDefinitionContext ctx) {
-    FieldDefinition node = new FieldDefinition();
-    extract(ctx, node);
-    return node;
+    return extract(ctx, FieldDefinition.builder()).build();
   }
 
   @Override
   public Node visitDirectiveDefinition(DirectiveDefinitionContext ctx) {
-    DirectiveDefinition node = new DirectiveDefinition();
-    extract(ctx, node);
-    node.setLocations(visitDirectiveLocations(ctx.directiveLocations()).getValue());
-    return node;
+
+    return extract(ctx, DirectiveDefinition.builder())
+        .locations(visitDirectiveLocations(ctx.directiveLocations()).getValue())
+        .build();
   }
 
   @Override
   public BypassNode<List<Directive>> visitDirectives(DirectivesContext ctx) {
-    List<Directive> list = Lists.newArrayList();
+    ImmutableList.Builder<Directive> list = ImmutableList.builder();
     if (ctx != null) {
       for (DirectiveContext context : ctx.directive()) {
         list.add(visitDirective(context));
       }
     }
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   @Override
   public Directive visitDirective(DirectiveContext ctx) {
-    return extract(ctx, new Directive());
+    return extract(ctx, Directive.builder()).build();
   }
 
   @Override
   public BypassNode<List<Argument>> visitArguments(ArgumentsContext ctx) {
-    List<Argument> list = Lists.newArrayList();
+    ImmutableList.Builder<Argument> list = ImmutableList.builder();
     if (ctx != null) {
       for (ArgumentContext context : ctx.argument()) {
         list.add(visitArgument(context));
       }
     }
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   @Override
   public Argument visitArgument(ArgumentContext ctx) {
-    return extract(ctx, new Argument());
+    return extract(ctx, Argument.builder()).build();
   }
 
   @Override
   public BypassNode<List<String>> visitDirectiveLocations(DirectiveLocationsContext ctx) {
     DirectiveLocationsContext self = ctx;
-    List<String> locations = Lists.newArrayList();
+    ImmutableList.Builder<String> locations = ImmutableList.builder();
     while (self != null) {
       locations.add(self.DirectiveLocation().getText());
       self = self.directiveLocations();
     }
-    return BypassNode.of(locations);
+    return BypassNode.of(locations.build());
   }
 
   @Override
   public BypassNode<List<InputValueDefinition>> visitArgumentsDefinition(
       ArgumentsDefinitionContext ctx) {
-    List<InputValueDefinition> list = Lists.newArrayList();
+    ImmutableList.Builder<InputValueDefinition> list = ImmutableList.builder();
     if (ctx != null) {
       for (InputValueDefinitionContext context : ctx.inputValueDefinition()) {
         list.add(visitInputValueDefinition(context));
       }
     }
 
-    return BypassNode.of(list);
+    return BypassNode.of(list.build());
   }
 
   @Override
   public InputValueDefinition visitInputValueDefinition(InputValueDefinitionContext ctx) {
-    return extract(ctx, new InputValueDefinition());
+    return extract(ctx, InputValueDefinition.builder()).build();
   }
 
   @Override
   public Node visitObjectTypeExtension(ObjectTypeExtensionContext ctx) {
-    return extract(ctx, new ObjectTypeExtension());
+    return extract(ctx, ObjectTypeExtension.builder()).build();
   }
 
   @Override
   public Node visitEnumTypeExtension(EnumTypeExtensionContext ctx) {
-    return extract(ctx, new EnumTypeExtension());
+    return extract(ctx, EnumTypeExtension.builder()).build();
   }
 
   @Override
   public Node visitInputObjectTypeDefinition(InputObjectTypeDefinitionContext ctx) {
-    return extract(ctx, new InputObjectTypeDefinition());
+    return extract(ctx, InputObjectTypeDefinition.builder()).build();
   }
 
   @Override
   public Node visitInputObjectTypeExtension(InputObjectTypeExtensionContext ctx) {
-    return extract(ctx, new InputObjectTypeExtension());
+    return extract(ctx, InputObjectTypeExtension.builder()).build();
   }
 
   @Override
   public Node visitBooleanValue(BooleanValueContext ctx) {
-    return extract(ctx, Langs.valueOf(Boolean.parseBoolean(ctx.getText())));
+    return extract(ctx, BooleanValue.builder()).value(Boolean.parseBoolean(ctx.getText())).build();
   }
 
   @Override
   public Node visitNullValue(NullValueContext ctx) {
-    return extract(ctx, new NullValue());
+    return extract(ctx, NullValue.builder()).build();
   }
 
   @Override
   public Node visitFloatValue(FloatValueContext ctx) {
-    return extract(ctx, Langs.valueOf(Double.parseDouble(ctx.getText())));
+    return extract(ctx, FloatValue.builder()).value(Float.parseFloat(ctx.getText())).build();
   }
 
   @Override
   public Node visitIntValue(IntValueContext ctx) {
-    return extract(ctx, Langs.valueOf(Long.parseLong(ctx.getText())));
+    return extract(ctx, IntValue.builder()).value(Integer.parseInt(ctx.getText())).build();
   }
 
   @Override
   public Node visitListValue(ListValueContext ctx) {
-    List<Value> list = Lists.newArrayList();
+    ImmutableList.Builder<Value> list = ImmutableList.builder();
     for (ValueContext context : ctx.value()) {
       list.add((Value) visit(context));
     }
-    return extract(ctx, Langs.valueOf(list));
+    return extract(ctx, ListValue.builder()).value(list.build()).build();
   }
 
   @Override
   public Node visitObjectValue(ObjectValueContext ctx) {
-    HashMap<String, Value> map = Maps.newHashMap();
+    ImmutableMap.Builder<String, Value> map = ImmutableMap.builder();
     for (ObjectFieldContext context : ctx.objectField()) {
-      map.entrySet().add(visitObjectField(context).getValue());
+      map.put(visitObjectField(context).getValue());
     }
-    return extract(ctx, Langs.valueOf(map));
+    return extract(ctx, ObjectValue.builder()).value(map.build()).build();
   }
 
   @Override
   public Node visitEnumValue(EnumValueContext ctx) {
-    return extract(ctx, Langs.enumOf(extractText(ctx)));
+    return extract(ctx, EnumValue.builder()).name(extractText(ctx.name())).build();
   }
 
   @Override
   public Node visitVariable(VariableContext ctx) {
-    return extract(ctx, Langs.variableOf(extractText(ctx.name())));
-  }
-
-  @Override
-  public Node visitInterfaceTypeExtension(InterfaceTypeExtensionContext ctx) {
-    return extract(ctx, new InterfaceTypeExtension());
+    return extract(ctx, Variable.builder()).build();
   }
 
   @Override
   public Node visitStringValue(StringValueContext ctx) {
-    return extract(ctx, Langs.valueOf(extractString(ctx)));
+    return extract(ctx, StringValue.builder()).value(extractString(ctx)).build();
+  }
+
+  @Override
+  public Node visitInterfaceTypeExtension(InterfaceTypeExtensionContext ctx) {
+    return extract(ctx, InterfaceTypeExtension.builder()).build();
   }
 
   // region execution
 
   @Override
   public Node visitOperationDefinition(OperationDefinitionContext ctx) {
-    OperationDefinition node = extract(ctx, new OperationDefinition());
-    node.setOperationType(extractText(ctx.operationType()));
-    List<VariableDefinition> variableDefinitions = Lists.newArrayList();
+    OperationDefinition.OperationDefinitionBuilder node =
+        extract(ctx, OperationDefinition.builder());
+    node.operationType(extractText(ctx.operationType(),"query"));
+    ImmutableList.Builder<VariableDefinition> variableDefinitions = ImmutableList.builder();
     if (ctx.variableDefinitions() != null) {
       for (VariableDefinitionContext context : ctx.variableDefinitions().variableDefinition()) {
         variableDefinitions.add(visitVariableDefinition(context));
       }
     }
-    node.setVariableDefinitions(variableDefinitions);
-    return node;
+    node.variableDefinitions(variableDefinitions.build());
+    return node.build();
   }
 
   @Override
   public VariableDefinition visitVariableDefinition(VariableDefinitionContext ctx) {
-    VariableDefinition node = extract(ctx, new VariableDefinition());
-    node.setVariableName(extractText(ctx.variable()));
-    return node;
+    return extract(ctx, VariableDefinition.builder()).name(extractText(ctx.variable())).build();
   }
 
   @Override
   public Node visitFragmentDefinition(FragmentDefinitionContext ctx) {
-    FragmentDefinition node = extract(ctx, new FragmentDefinition());
-    node.setFragmentName(extractText(ctx.fragmentName()));
-    if (ctx.typeCondition() != null) {
-      node.setTypeCondition(extractText(ctx.typeCondition()));
-    }
-    return node;
+    return extract(ctx, FragmentDefinition.builder())
+        .name(extractText(ctx.fragmentName()))
+        .typeCondition(extractText(ctx.typeCondition()))
+        .build();
   }
 
   @Override
   public SelectionSet visitSelectionSet(SelectionSetContext ctx) {
-    SelectionSet node = extract(ctx, new SelectionSet());
-    List<Selection> selections = Lists.newArrayList();
-    if (ctx != null) {
-      for (SelectionContext context : ctx.selection()) {
-        selections.add((Selection) visit(context));
-      }
+    if (ctx == null) {
+      return null;
+    }
+    SelectionSet.SelectionSetBuilder builder = extract(ctx, SelectionSet.builder());
+    ImmutableList.Builder<Selection> selections = ImmutableList.builder();
+    for (SelectionContext context : ctx.selection()) {
+      selections.add((Selection) visit(context));
     }
 
-    node.setSelections(selections);
-    return node;
+    return builder.selections(selections.build()).build();
   }
 
   @Override
   public Node visitField(FieldContext ctx) {
-    Field node = extract(ctx, new Field());
-    node.setAlias(extractText(ctx.alias()));
-    return node;
+    return extract(ctx, Field.builder()).alias(extractText(ctx.alias())).build();
   }
 
   @Override
   public Node visitFragmentSpread(FragmentSpreadContext ctx) {
-    return extract(ctx, new FragmentSpread());
+    return extract(ctx, FragmentSpread.builder()).build();
   }
 
   @Override
   public Node visitInlineFragment(InlineFragmentContext ctx) {
-    return extract(ctx, new InlineFragment());
+    return extract(ctx, InlineFragment.builder()).build();
   }
 
   // endregion
@@ -529,95 +533,106 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     return BypassNode.of(new SimpleEntry<>(ctx.name().getText(), (Value) visit(ctx.value())));
   }
 
-  private <T extends Node> T extract(ParserRuleContext ctx, T node) {
+  private <T extends Builders.BuildNode> T extract(ParserRuleContext ctx, T builder) {
     if (ctx == null) {
-      return node;
+      return builder;
     }
-    if (node == null) {
-      throw new RuntimeException("require node");
+    if (builder == null) {
+      throw new RuntimeException("require builder");
     }
-    node.setSourceLocation(
-        new SourceLocation()
-            .setLine(ctx.getStart().getLine())
-            .setColumn(ctx.getStart().getCharPositionInLine()));
+    builder.sourceLocation(
+        SourceLocation.builder()
+            .source(source)
+            .line(ctx.getStart().getLine())
+            .column(ctx.getStart().getCharPositionInLine())
+            .build());
 
     // TODO comments
 
-    if (node instanceof HasArguments) {
-      ((HasArguments) node)
-          .setArguments(visitArguments(ctx.getRuleContext(ArgumentsContext.class, 0)).getValue());
+    if (builder instanceof BuildArguments) {
+      ((BuildArguments) builder)
+          .arguments(visitArguments(ctx.getRuleContext(ArgumentsContext.class, 0)).getValue());
     }
-    if (node instanceof HasArgumentDefinitions) {
-      ((HasArgumentDefinitions) node)
-          .setArgumentDefinitions(
+    if (builder instanceof BuildArgumentDefinitions) {
+      ((BuildArgumentDefinitions) builder)
+          .argumentDefinitions(
               visitArgumentsDefinition(ctx.getRuleContext(ArgumentsDefinitionContext.class, 0))
                   .getValue());
     }
 
-    if (node instanceof HasDefaultValue) {
-      ((HasDefaultValue) node)
-          .setDefaultValue((Value) visit(ctx.getRuleContext(DefaultValueContext.class, 0)));
+    if (builder instanceof BuildDefaultValue) {
+      ((BuildDefaultValue) builder)
+          .defaultValue((Value) visit(ctx.getRuleContext(DefaultValueContext.class, 0)));
     }
-    if (node instanceof HasDescription) {
-      ((HasDescription) node)
-          .setDescription(extractString(ctx.getRuleContext(DescriptionContext.class, 0)));
+    if (builder instanceof BuildDescription) {
+      ((BuildDescription) builder)
+          .description(extractString(ctx.getRuleContext(DescriptionContext.class, 0)));
     }
-    if (node instanceof HasDirectives) {
-      ((HasDirectives) node)
-          .setDirectives(
-              visitDirectives(ctx.getRuleContext(DirectivesContext.class, 0)).getValue());
+    if (builder instanceof BuildDirectives) {
+      ((BuildDirectives) builder)
+          .directives(visitDirectives(ctx.getRuleContext(DirectivesContext.class, 0)).getValue());
     }
-    if (node instanceof HasEnumValue) {
-      ((HasEnumValue) node)
-          .setEnumValue(extractText(ctx.getRuleContext(EnumValueContext.class, 0)));
+    if (builder instanceof BuildEnumValue) {
+      ((BuildEnumValue) builder)
+          .enumValue(extractText(ctx.getRuleContext(EnumValueContext.class, 0)));
     }
-    if (node instanceof HasEnumValueDefinitions) {
-      ((HasEnumValueDefinitions) node)
-          .setEnumValueDefinitions(
+    if (builder instanceof BuildEnumValueDefinitions) {
+      ((BuildEnumValueDefinitions) builder)
+          .enumValueDefinitions(
               visitEnumValuesDefinition(ctx.getRuleContext(EnumValuesDefinitionContext.class, 0))
                   .getValue());
     }
-    if (node instanceof HasFieldDefinitions) {
-      ((HasFieldDefinitions) node)
-          .setFieldDefinitions(
+    if (builder instanceof BuildFieldDefinitions) {
+      ((BuildFieldDefinitions) builder)
+          .fieldDefinitions(
               visitFieldsDefinition(ctx.getRuleContext(FieldsDefinitionContext.class, 0))
                   .getValue());
     }
-    if (node instanceof HasFragmentName) {
-      ((HasFragmentName) node)
-          .setFragmentName(extractText(ctx.getRuleContext(FragmentNameContext.class, 0)));
+    //    if (node instanceof HasFragmentName) {
+    //      ((HasFragmentName) node)
+    //          .setName(extractText(ctx.getRuleContext(FragmentNameContext.class, 0)));
+    //    }
+    if (builder instanceof BuildTypeCondition) {
+      ((BuildTypeCondition) builder)
+          .typeCondition(extractText(ctx.getRuleContext(TypeConditionContext.class, 0)));
     }
-    if (node instanceof HasTypeCondition) {
-      ((HasTypeCondition) node)
-          .setTypeCondition(extractText(ctx.getRuleContext(TypeConditionContext.class, 0)));
-    }
-    if (node instanceof HasInterfaces) {
-      ((HasInterfaces) node)
-          .setInterfaces(
+    if (builder instanceof BuildInterfaces) {
+      ((BuildInterfaces) builder)
+          .interfaces(
               visitImplementsInterfaces(ctx.getRuleContext(ImplementsInterfacesContext.class, 0))
                   .getValue());
     }
-    if (node instanceof HasName) {
-      ((HasName) node).setName(extractText(ctx.getRuleContext(NameContext.class, 0)));
+    if (builder instanceof BuildName) {
+      ((Builders.BuildName) builder).name(extractText(ctx.getRuleContext(NameContext.class, 0)));
     }
 
     // extend NAME by EXTEND_TYPE_NAME
-    if (node instanceof HasExtendTypeName) {
+    if (builder instanceof BuildExtendTypeName) {
       // Must after HasName check
-      ((HasExtendTypeName) node).setExtendTypeName(((HasName) node).getName());
-      ((HasName) node).setName(extractText(ctx.getRuleContext(NameContext.class, 1)));
+      ((BuildExtendTypeName) builder)
+          .extendTypeName(extractText(ctx.getRuleContext(NameContext.class, 1)));
+      //      ((BuildExtendTypeName) builder).name(extractText(ctx.getRuleContext(NameContext.class,
+      // 1)));
     }
-    if (node instanceof HasSelectionSet) {
-      ((HasSelectionSet) node)
-          .setSelectionSet(visitSelectionSet(ctx.getRuleContext(SelectionSetContext.class, 0)));
+    if (builder instanceof BuildSelectionSet) {
+      ((BuildSelectionSet) builder)
+          .selectionSet(visitSelectionSet(ctx.getRuleContext(SelectionSetContext.class, 0)));
     }
-    if (node instanceof HasType) {
-      ((HasType) node).setType((Type) visit(ctx.getRuleContext(TypeContext.class, 0)));
+    if (builder instanceof BuildType) {
+      ((BuildType) builder).type((Type) visit(ctx.getRuleContext(TypeContext.class, 0)));
     }
-    if (node instanceof HasValue) {
-      ((HasValue) node).setValue((Value) visit(ctx.getRuleContext(TypeContext.class, 0)));
+    if (builder instanceof BuildValue) {
+      ((BuildValue) builder).value((Value) visit(ctx.getRuleContext(ValueContext.class, 0)));
     }
-    return node;
+    return builder;
+  }
+
+  private String extractText(ParseTree node, String def) {
+    String v = extractText(node);
+    if (v == null) {
+      return def;
+    }
+    return v;
   }
 
   private String extractText(ParseTree node) {

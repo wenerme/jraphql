@@ -1,17 +1,38 @@
 package me.wener.jraphql.lang;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
 import java.util.List;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import me.wener.jraphql.lang.Builders.BuildFieldDefinitions;
+import me.wener.jraphql.lang.Builders.BuildInterfaces;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-@Data
-public class ObjectTypeDefinition extends AbstractTypeDefinition<ObjectTypeDefinition>
-    implements HasFieldDefinitions<ObjectTypeDefinition>, HasInterfaces<ObjectTypeDefinition> {
+@Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = ObjectTypeDefinition.ObjectTypeDefinitionBuilder.class)
+public class ObjectTypeDefinition implements TypeDefinition {
 
-  private List<String> interfaces = Lists.newArrayList();
-  private List<FieldDefinition> fieldDefinitions = Lists.newArrayList();
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+  @NonNull private String name;
+  private String description;
+  @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
+
+  @NonNull @Builder.Default private List<String> interfaces = Collections.emptyList();
+
+  @NonNull @Builder.Default
+  private List<FieldDefinition> fieldDefinitions = Collections.emptyList();
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class ObjectTypeDefinitionBuilder
+      implements Builders.BuildTypeDefinition<ObjectTypeDefinitionBuilder>,
+          BuildInterfaces<ObjectTypeDefinitionBuilder>,
+          BuildFieldDefinitions<ObjectTypeDefinitionBuilder> {}
 }

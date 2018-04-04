@@ -1,30 +1,32 @@
 package me.wener.jraphql.lang;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-public interface Type<T> extends Node<T> {
+public interface Type extends Node {
 
-  default boolean isNonNull() {
-    return false;
-  }
-
-  default boolean isList() {
-    return false;
-  }
-
-  default boolean isNamed() {
-    return false;
-  }
-
+  /** Nested type of the nonnull or list */
   default Type getType() {
     return null;
   }
 
+  /** type name of the named type */
+  @Nullable
+  @Override
+  default String getName() {
+    return null;
+  }
+
+  default TypeKind getKind() {
+    return Langs.getTypeKind(this);
+  }
+
   /** @return Deepest type name */
   default String resolveTypeName() {
-    if (this.isNamed()) {
+    if (this.getKind().isNamed()) {
       return this.getName();
     } else {
       return this.getType().resolveTypeName();

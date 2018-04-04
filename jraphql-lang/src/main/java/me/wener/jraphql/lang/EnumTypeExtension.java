@@ -1,16 +1,34 @@
 package me.wener.jraphql.lang;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
 import java.util.List;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import me.wener.jraphql.lang.Builders.BuildEnumValueDefinitions;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-@Data
-public class EnumTypeExtension extends AbstractTypeExtension
-    implements HasEnumValueDefinitions<EnumTypeExtension> {
+@Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = EnumTypeExtension.EnumTypeExtensionBuilder.class)
+public class EnumTypeExtension implements TypeExtension {
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+  @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
+  @NonNull private String extendTypeName;
 
-  private List<EnumValueDefinition> enumValueDefinitions = Lists.newArrayList();
+  @NonNull @Builder.Default
+  private List<EnumValueDefinition> enumValueDefinitions = Collections.emptyList();
+
+  private String name;
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class EnumTypeExtensionBuilder
+      implements Builders.BuildTypeExtension<EnumTypeExtensionBuilder>,
+          BuildEnumValueDefinitions<EnumTypeExtensionBuilder> {}
 }

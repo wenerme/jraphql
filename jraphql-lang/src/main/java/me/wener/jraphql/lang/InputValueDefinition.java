@@ -1,23 +1,36 @@
 package me.wener.jraphql.lang;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
 import java.util.List;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-@Data
-public class InputValueDefinition extends AbstractDefinition<InputValueDefinition>
-    implements HasName<InputValueDefinition>,
-        HasDescription<InputValueDefinition>,
-        HasDirectives<InputValueDefinition>,
-        HasType<InputValueDefinition>,
-        HasDefaultValue<InputValueDefinition> {
+@lombok.Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = InputValueDefinition.InputValueDefinitionBuilder.class)
+public class InputValueDefinition implements Definition {
 
-  private String name;
-  private String description;
-  private List<Directive> directives;
-  private Type type;
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+
+  @NonNull private String name;
+  @Builder.Default private String description = "";
+  @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
+  @NonNull private Type type;
   private Value defaultValue;
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class InputValueDefinitionBuilder
+      implements Builders.BuildDefinition<InputValueDefinitionBuilder>,
+          Builders.BuildDescription<InputValueDefinitionBuilder>,
+          Builders.BuildName<InputValueDefinitionBuilder>,
+          Builders.BuildDirectives<InputValueDefinitionBuilder>,
+          Builders.BuildType<InputValueDefinitionBuilder>,
+          Builders.BuildDefaultValue<InputValueDefinitionBuilder> {}
 }

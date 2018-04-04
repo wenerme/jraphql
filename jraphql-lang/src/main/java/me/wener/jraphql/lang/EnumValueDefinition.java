@@ -1,20 +1,33 @@
 package me.wener.jraphql.lang;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.util.Collections;
 import java.util.List;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 16/03/2018
  */
-@Data
-public class EnumValueDefinition extends AbstractDefinition
-    implements HasDirectives<EnumValueDefinition>,
-        HasDescription<EnumValueDefinition>,
-        HasEnumValue<EnumValueDefinition> {
+@Value
+@Builder(toBuilder = true)
+@JsonDeserialize(builder = EnumValueDefinition.EnumValueDefinitionBuilder.class)
+public class EnumValueDefinition implements Definition {
 
-  private String description;
-  private String enumValue;
-  private List<Directive> directives = Lists.newArrayList();
+  @NonNull private SourceLocation sourceLocation;
+  @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
+
+  @Builder.Default private String description = "";
+  @NonNull private String enumValue;
+  @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
+
+  @JsonPOJOBuilder(withPrefix = "")
+  public static class EnumValueDefinitionBuilder
+      implements Builders.BuildDefinition<EnumValueDefinitionBuilder>,
+          Builders.BuildDirectives<EnumValueDefinitionBuilder>,
+          Builders.BuildDescription<EnumValueDefinitionBuilder>,
+          Builders.BuildEnumValue<EnumValueDefinitionBuilder> {}
 }
