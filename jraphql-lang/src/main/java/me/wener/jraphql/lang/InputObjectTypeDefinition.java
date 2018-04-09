@@ -23,6 +23,9 @@ public class InputObjectTypeDefinition implements TypeDefinition {
   private String description;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
+  @NonNull @Builder.Default private List<InputValueDefinition> inputFieldsDefinitions = Collections.emptyList();
+
+
   @JsonPOJOBuilder(withPrefix = "")
   public static class InputObjectTypeDefinitionBuilder
       implements Builders.BuildTypeDefinition<InputObjectTypeDefinitionBuilder> {}

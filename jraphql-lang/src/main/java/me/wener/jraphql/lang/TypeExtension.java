@@ -7,9 +7,24 @@ import java.util.List;
  * @since 16/03/2018
  */
 public interface TypeExtension extends DocumentDefinition {
+
+  /** @return name of this extension */
   String getName();
 
+  /** @return type has been extended */
   String getExtendTypeName();
+
+//  /** @return extend by another type */
+//  default String getExtendByName() {
+//    // extend <ExtendTypeName> by <ExtendByName> as <Name>
+//    // TODO
+//    return null;
+//  }
+
+//  default String getDescription(){
+//    // TODO if extension can be named, thet also can be described.
+//    return null;
+//  }
 
   List<Directive> getDirectives();
 

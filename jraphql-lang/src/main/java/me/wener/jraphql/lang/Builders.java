@@ -21,8 +21,15 @@ public interface Builders {
 
   interface BuildDefinition<T> extends BuildNode<T> {}
 
-  interface BuildTypeExtension<T>
-      extends BuildNode<T>, BuildDirectives<T>, BuildExtendTypeName<T> {}
+  interface BuildTypeExtension<T> extends BuildNode<T>, BuildDirectives<T> {
+    T name(String name);
+
+    T extendTypeName(String name);
+
+    default T extendByName(String name) {
+      throw new GraphLanguageException("unsupported extend by");
+    }
+  }
 
   interface BuildTypeDefinition<T>
       extends BuildNode<T>, BuildDirectives<T>, BuildDescription<T>, BuildName<T> {}
@@ -62,7 +69,7 @@ public interface Builders {
 
   interface BuildEnumValue<T> {
 
-    T enumValue(String s);
+    T name(String s);
   }
 
   interface BuildEnumValueDefinitions<T> {
@@ -70,10 +77,10 @@ public interface Builders {
     T enumValueDefinitions(List<EnumValueDefinition> enumValueDefinitions);
   }
 
-  interface BuildExtendTypeName<T> extends BuildName<T> {
-
-    T extendTypeName(String s);
-  }
+  //  interface BuildExtendTypeName<T> extends BuildName<T> {
+  //
+  //    T extendTypeName(String s);
+  //  }
 
   interface BuildFieldDefinitions<T> {
 

@@ -15,7 +15,7 @@ import lombok.Value;
 @Value
 @Builder(toBuilder = true)
 @JsonDeserialize(builder = OperationDefinition.OperationDefinitionBuilder.class)
-public class OperationDefinition implements DocumentDefinition {
+public class OperationDefinition implements ExecutableDefinition {
 
   @NonNull private SourceLocation sourceLocation;
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();

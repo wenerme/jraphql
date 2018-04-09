@@ -11,6 +11,7 @@ public enum TypeDefinitionKind implements Kind {
   INTERFACE,
   SCHEMA,
   UNION,
-  INPUT,
+  INPUT_OBJECT,
+  DIRECTIVE,
   ;
 }

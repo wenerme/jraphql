@@ -21,7 +21,7 @@ public class EnumValueDefinition implements Definition {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
 
   @Builder.Default private String description = "";
-  @NonNull private String enumValue;
+  @NonNull private String name; // enumValue
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
   @JsonPOJOBuilder(withPrefix = "")

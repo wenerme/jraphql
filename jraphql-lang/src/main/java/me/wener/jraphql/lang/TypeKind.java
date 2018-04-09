@@ -6,11 +6,12 @@ package me.wener.jraphql.lang;
  */
 public enum TypeKind implements Kind {
   NAMED,
-  NONNULL,
-  LIST,;
+  NON_NULL,
+  LIST,
+  ;
 
   public boolean isNonnull() {
-    return this == NONNULL;
+    return this == NON_NULL;
   }
 
   public boolean isList() {

@@ -22,6 +22,7 @@ public class UnionTypeDefinition implements TypeDefinition {
   @NonNull private String name;
   private String description;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
+  @NonNull @Builder.Default private List<String> memberTypes = Collections.emptyList();
 
   @JsonPOJOBuilder(withPrefix = "")
   public static class UnionTypeDefinitionBuilder

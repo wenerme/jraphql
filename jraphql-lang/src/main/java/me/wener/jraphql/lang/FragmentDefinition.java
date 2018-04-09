@@ -15,7 +15,7 @@ import lombok.Value;
 @Value
 @Builder(toBuilder = true)
 @JsonDeserialize(builder = FragmentDefinition.FragmentDefinitionBuilder.class)
-public class FragmentDefinition implements Definition {
+public class FragmentDefinition implements ExecutableDefinition {
 
   @NonNull private SourceLocation sourceLocation;
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();

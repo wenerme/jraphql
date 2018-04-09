@@ -13,5 +13,6 @@ public enum ValueKind implements Kind {
   ENUM,
   STRING,
   BOOLEAN,
-  VARIABLE,;
+  VARIABLE,
+  ;
 }

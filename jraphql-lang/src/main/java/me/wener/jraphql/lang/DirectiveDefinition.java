@@ -25,9 +25,13 @@ public class DirectiveDefinition implements TypeDefinition {
   @NonNull private String name;
   @NonNull @Builder.Default private List<String> locations = Collections.emptyList();
 
+  @NonNull @Builder.Default
+  private List<InputValueDefinition> argumentDefinitions = Collections.emptyList();
+
   @JsonPOJOBuilder(withPrefix = "")
   public static class DirectiveDefinitionBuilder
       implements Builders.BuildNode<DirectiveDefinitionBuilder>,
           Builders.BuildName<DirectiveDefinitionBuilder>,
-          Builders.BuildDirectives<DirectiveDefinitionBuilder> {}
+          Builders.BuildDirectives<DirectiveDefinitionBuilder>,
+          Builders.BuildArgumentDefinitions<DirectiveDefinitionBuilder> {}
 }

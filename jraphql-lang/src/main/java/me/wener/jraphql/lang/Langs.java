@@ -29,6 +29,10 @@ public interface Langs {
     return Optional.empty();
   }
 
+  static boolean isExecutableDefinition(Node node) {
+    return node instanceof ExecutableDefinition;
+  }
+
   static boolean isTypeDefinition(Node node) {
     return node instanceof TypeDefinition;
   }
@@ -87,10 +91,23 @@ public interface Langs {
     }
   }
 
+  static SourceLocation runtimeLocation() {
+    return Holder.runtimeLocation;
+  }
+
+  static NullValue runtimeNullValue() {
+    return Holder.runtimeNullValue;
+  }
+
   final class Holder {
     private static final ImmutableMap<Class<?>, TypeDefinitionKind> typeDefinitionKindMap;
     private static final ImmutableMap<Class<?>, ValueKind> valueKindMap;
     private static final ImmutableMap<Class<?>, TypeKind> typeKindMap;
+    private static final SourceLocation runtimeLocation =
+        SourceLocation.builder().source("runtime").column(0).line(0).build();
+
+    private static final NullValue runtimeNullValue =
+        NullValue.builder().sourceLocation(runtimeLocation).build();
 
     static {
       {
@@ -98,8 +115,8 @@ public interface Langs {
         builder.put(SchemaDefinition.class, TypeDefinitionKind.SCHEMA);
         builder.put(EnumTypeDefinition.class, TypeDefinitionKind.ENUM);
         builder.put(EnumTypeExtension.class, TypeDefinitionKind.ENUM);
-        builder.put(InputObjectTypeDefinition.class, TypeDefinitionKind.INPUT);
-        builder.put(InputObjectTypeExtension.class, TypeDefinitionKind.INPUT);
+        builder.put(InputObjectTypeDefinition.class, TypeDefinitionKind.INPUT_OBJECT);
+        builder.put(InputObjectTypeExtension.class, TypeDefinitionKind.INPUT_OBJECT);
         builder.put(ObjectTypeDefinition.class, TypeDefinitionKind.OBJECT);
         builder.put(ObjectTypeExtension.class, TypeDefinitionKind.OBJECT);
         builder.put(UnionTypeDefinition.class, TypeDefinitionKind.UNION);
@@ -108,6 +125,8 @@ public interface Langs {
         builder.put(InterfaceTypeExtension.class, TypeDefinitionKind.INTERFACE);
         builder.put(ScalarTypeDefinition.class, TypeDefinitionKind.SCALAR);
         builder.put(ScalarTypeExtension.class, TypeDefinitionKind.SCALAR);
+        builder.put(DirectiveDefinition.class, TypeDefinitionKind.DIRECTIVE);
+
         typeDefinitionKindMap = builder.build();
       }
       {
@@ -121,13 +140,15 @@ public interface Langs {
         builder.put(StringValue.class, ValueKind.STRING);
         builder.put(BooleanValue.class, ValueKind.BOOLEAN);
         builder.put(Variable.class, ValueKind.VARIABLE);
+
         valueKindMap = builder.build();
       }
       {
         Builder<Class<?>, TypeKind> builder = ImmutableMap.builder();
-        builder.put(NonNullType.class, TypeKind.NONNULL);
+        builder.put(NonNullType.class, TypeKind.NON_NULL);
         builder.put(ListType.class, TypeKind.LIST);
         builder.put(NamedType.class, TypeKind.NAMED);
+
         typeKindMap = builder.build();
       }
     }

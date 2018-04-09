@@ -18,13 +18,13 @@ import me.wener.jraphql.lang.Builders.BuildDescription;
 import me.wener.jraphql.lang.Builders.BuildDirectives;
 import me.wener.jraphql.lang.Builders.BuildEnumValue;
 import me.wener.jraphql.lang.Builders.BuildEnumValueDefinitions;
-import me.wener.jraphql.lang.Builders.BuildExtendTypeName;
 import me.wener.jraphql.lang.Builders.BuildFieldDefinitions;
 import me.wener.jraphql.lang.Builders.BuildInterfaces;
 import me.wener.jraphql.lang.Builders.BuildName;
 import me.wener.jraphql.lang.Builders.BuildSelectionSet;
 import me.wener.jraphql.lang.Builders.BuildType;
 import me.wener.jraphql.lang.Builders.BuildTypeCondition;
+import me.wener.jraphql.lang.Builders.BuildTypeExtension;
 import me.wener.jraphql.lang.Builders.BuildValue;
 import me.wener.jraphql.lang.Directive;
 import me.wener.jraphql.lang.DirectiveDefinition;
@@ -65,6 +65,10 @@ import me.wener.jraphql.lang.SelectionSet;
 import me.wener.jraphql.lang.SourceLocation;
 import me.wener.jraphql.lang.StringValue;
 import me.wener.jraphql.lang.Type;
+import me.wener.jraphql.lang.UnionTypeDefinition;
+import me.wener.jraphql.lang.UnionTypeDefinition.UnionTypeDefinitionBuilder;
+import me.wener.jraphql.lang.UnionTypeExtension;
+import me.wener.jraphql.lang.UnionTypeExtension.UnionTypeExtensionBuilder;
 import me.wener.jraphql.lang.Value;
 import me.wener.jraphql.lang.Variable;
 import me.wener.jraphql.lang.VariableDefinition;
@@ -125,6 +129,8 @@ import me.wener.jraphql.parser.antlr.GraphQLParser.TypeContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.TypeSystemDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.TypeSystemDocumentContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.UnionMemberTypesContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.UnionTypeDefinitionContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.UnionTypeExtensionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ValueContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.VariableContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.VariableDefinitionContext;
@@ -260,6 +266,20 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   }
 
   @Override
+  public Node visitUnionTypeExtension(UnionTypeExtensionContext ctx) {
+    UnionTypeExtensionBuilder builder = extract(ctx, UnionTypeExtension.builder());
+    builder.unionMemberTypes(visitUnionMemberTypes(ctx.unionMemberTypes()).getValue());
+    return builder.build();
+  }
+
+  @Override
+  public Node visitUnionTypeDefinition(UnionTypeDefinitionContext ctx) {
+    UnionTypeDefinitionBuilder builder = extract(ctx, UnionTypeDefinition.builder());
+    builder.memberTypes(visitUnionMemberTypes(ctx.unionMemberTypes()).getValue());
+    return builder.build();
+  }
+
+  @Override
   public BypassNode<List<String>> visitUnionMemberTypes(UnionMemberTypesContext ctx) {
     ImmutableList.Builder<String> list = ImmutableList.builder();
     UnionMemberTypesContext self = ctx;
@@ -322,7 +342,6 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public Node visitDirectiveDefinition(DirectiveDefinitionContext ctx) {
-
     return extract(ctx, DirectiveDefinition.builder())
         .locations(visitDirectiveLocations(ctx.directiveLocations()).getValue())
         .build();
@@ -473,7 +492,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   public Node visitOperationDefinition(OperationDefinitionContext ctx) {
     OperationDefinition.OperationDefinitionBuilder node =
         extract(ctx, OperationDefinition.builder());
-    node.operationType(extractText(ctx.operationType(),"query"));
+    node.operationType(extractText(ctx.operationType(), "query"));
     ImmutableList.Builder<VariableDefinition> variableDefinitions = ImmutableList.builder();
     if (ctx.variableDefinitions() != null) {
       for (VariableDefinitionContext context : ctx.variableDefinitions().variableDefinition()) {
@@ -491,10 +510,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public Node visitFragmentDefinition(FragmentDefinitionContext ctx) {
-    return extract(ctx, FragmentDefinition.builder())
-        .name(extractText(ctx.fragmentName()))
-        .typeCondition(extractText(ctx.typeCondition()))
-        .build();
+    return extract(ctx, FragmentDefinition.builder()).name(extractText(ctx.fragmentName())).build();
   }
 
   @Override
@@ -518,7 +534,9 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public Node visitFragmentSpread(FragmentSpreadContext ctx) {
-    return extract(ctx, FragmentSpread.builder()).build();
+    return extract(ctx, FragmentSpread.builder())
+        .fragmentName(extractText(ctx.fragmentName()))
+        .build();
   }
 
   @Override
@@ -573,8 +591,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
           .directives(visitDirectives(ctx.getRuleContext(DirectivesContext.class, 0)).getValue());
     }
     if (builder instanceof BuildEnumValue) {
-      ((BuildEnumValue) builder)
-          .enumValue(extractText(ctx.getRuleContext(EnumValueContext.class, 0)));
+      ((BuildEnumValue) builder).name(extractText(ctx.getRuleContext(EnumValueContext.class, 0)));
     }
     if (builder instanceof BuildEnumValueDefinitions) {
       ((BuildEnumValueDefinitions) builder)
@@ -593,8 +610,10 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     //          .setName(extractText(ctx.getRuleContext(FragmentNameContext.class, 0)));
     //    }
     if (builder instanceof BuildTypeCondition) {
-      ((BuildTypeCondition) builder)
-          .typeCondition(extractText(ctx.getRuleContext(TypeConditionContext.class, 0)));
+      TypeConditionContext typeConditionContext = ctx.getRuleContext(TypeConditionContext.class, 0);
+      if (typeConditionContext != null) {
+        ((BuildTypeCondition) builder).typeCondition(extractText(typeConditionContext.namedType()));
+      }
     }
     if (builder instanceof BuildInterfaces) {
       ((BuildInterfaces) builder)
@@ -606,13 +625,37 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
       ((Builders.BuildName) builder).name(extractText(ctx.getRuleContext(NameContext.class, 0)));
     }
 
-    // extend NAME by EXTEND_TYPE_NAME
-    if (builder instanceof BuildExtendTypeName) {
-      // Must after HasName check
-      ((BuildExtendTypeName) builder)
-          .extendTypeName(extractText(ctx.getRuleContext(NameContext.class, 1)));
-      //      ((BuildExtendTypeName) builder).name(extractText(ctx.getRuleContext(NameContext.class,
-      // 1)));
+    //    // extend NAME by EXTEND_TYPE_NAME
+    //    if (builder instanceof BuildExtendTypeName) {
+    //      // Must after HasName check
+    //      ((BuildExtendTypeName) builder)
+    //          .extendTypeName(extractText(ctx.getRuleContext(NameContext.class, 1)));
+    //      //      ((BuildExtendTypeName)
+    // builder).name(extractText(ctx.getRuleContext(NameContext.class,
+    //      // 1)));
+    //    }
+    if (builder instanceof BuildTypeExtension) {
+      // extend <ExtendTypeName> by <ExtendByName> as <Name>
+      BuildTypeExtension<BuildTypeExtension<BuildTypeExtension>> b = (BuildTypeExtension) builder;
+      List<NameContext> names = ctx.getRuleContexts(NameContext.class);
+      switch (names.size()) {
+        case 1:
+          b.extendTypeName(extractText(names.get(0)));
+          break;
+        case 2:
+          b.extendTypeName(extractText(names.get(0)));
+          b.extendByName(extractText(names.get(0)));
+          // TOOD support extend ? as ?
+          break;
+        case 3:
+          b.extendTypeName(extractText(names.get(0)))
+              .extendByName(extractText(names.get(1)))
+              .name(extractText(names.get(2)));
+          break;
+      }
+
+      //      ((Builders.BuildTypeExtension)
+      // builder).name(extractText(ctx.getRuleContext(NameContext.class, 0)));
     }
     if (builder instanceof BuildSelectionSet) {
       ((BuildSelectionSet) builder)

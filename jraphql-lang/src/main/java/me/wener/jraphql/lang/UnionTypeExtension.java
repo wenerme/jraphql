@@ -22,6 +22,7 @@ public class UnionTypeExtension implements TypeExtension {
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private String extendTypeName;
   private String name;
+  @NonNull @Builder.Default private List<String> unionMemberTypes = Collections.emptyList();
 
   @JsonPOJOBuilder(withPrefix = "")
   public static class UnionTypeExtensionBuilder
