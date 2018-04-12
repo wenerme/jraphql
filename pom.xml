@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>com.github.wenerme.wava</groupId>
         <artifactId>wava-parent</artifactId>
         <version>0.0.3</version>
-        <relativePath/>
+        <relativePath />
     </parent>
     <groupId>me.wener.jraphql</groupId>
     <artifactId>jraphql</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.4</version>
     <name>JraphQL</name>
     <modules>
         <module>jraphql-parser-antlr</module>
@@ -35,22 +33,22 @@
             <dependency>
                 <groupId>me.wener.jraphql</groupId>
                 <artifactId>jraphql-lang</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
+                <version>0.0.4</version>
             </dependency>
             <dependency>
                 <groupId>me.wener.jraphql</groupId>
                 <artifactId>jrapgql-api</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
+                <version>0.0.4</version>
             </dependency>
             <dependency>
                 <groupId>me.wener.jraphql</groupId>
                 <artifactId>jraphql-runtime</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
+                <version>0.0.4</version>
             </dependency>
             <dependency>
                 <groupId>me.wener.jraphql</groupId>
                 <artifactId>jraphql-parser-antlr</artifactId>
-                <version>0.0.4-SNAPSHOT</version>
+                <version>0.0.4</version>
             </dependency>
             <dependency>
                 <groupId>com.graphql-java</groupId>
@@ -167,6 +165,6 @@
         <connection>scm:git:https://github.com/wenerme/jraphql.git</connection>
         <developerConnection>scm:git:https://github.com/wenerme/jraphql.git</developerConnection>
         <url>http://github.com/wenerme/jraphql</url>
-        <tag>HEAD</tag>
+        <tag>v0.0.4</tag>
     </scm>
 </project>
