@@ -21,13 +21,13 @@ public class EnumTypeExtension implements TypeExtension {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private String extendTypeName;
+  private String extendByName;
+  private String name;
 
   @NonNull @Builder.Default
   private List<EnumValueDefinition> enumValueDefinitions = Collections.emptyList();
 
-  private String name;
 
-  @JsonPOJOBuilder(withPrefix = "")
   public static class EnumTypeExtensionBuilder
       implements Builders.BuildTypeExtension<EnumTypeExtensionBuilder>,
           BuildEnumValueDefinitions<EnumTypeExtensionBuilder> {}

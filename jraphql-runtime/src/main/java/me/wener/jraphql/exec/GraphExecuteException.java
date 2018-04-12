@@ -6,4 +6,19 @@ package me.wener.jraphql.exec;
  */
 public class GraphExecuteException extends RuntimeException {
 
+  public GraphExecuteException() {
+    super();
+  }
+
+  public GraphExecuteException(String message) {
+    super(message);
+  }
+
+  public GraphExecuteException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public GraphExecuteException(Throwable cause) {
+    super(cause);
+  }
 }

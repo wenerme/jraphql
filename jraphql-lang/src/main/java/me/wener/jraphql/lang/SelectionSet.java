@@ -20,6 +20,6 @@ public class SelectionSet implements Node {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Selection> selections = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class SelectionSetBuilder implements Builders.BuildNode<SelectionSetBuilder> {}
 }

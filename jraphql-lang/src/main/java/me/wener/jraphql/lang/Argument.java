@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -22,7 +21,7 @@ public class Argument implements Node {
   @NonNull private String name;
   @NonNull private Value value;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ArgumentBuilder
       implements Builders.BuildNode<ArgumentBuilder>,
           Builders.BuildName<ArgumentBuilder>,

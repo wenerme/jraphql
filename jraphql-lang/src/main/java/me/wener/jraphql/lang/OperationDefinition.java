@@ -29,7 +29,7 @@ public class OperationDefinition implements ExecutableDefinition {
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   private SelectionSet selectionSet;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class OperationDefinitionBuilder
       implements Builders.BuildDefinition<OperationDefinitionBuilder>,
           Builders.BuildName<OperationDefinitionBuilder>,

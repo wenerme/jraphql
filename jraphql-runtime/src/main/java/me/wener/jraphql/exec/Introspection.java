@@ -1,16 +1,20 @@
-package me.wener.jraphql.introspection;
+package me.wener.jraphql.exec;
 
 import java.util.List;
+import java.util.Objects;
 import javax.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
+ * Introspection for GraphQL <br>
+ * <b>NOTE</b> All data are mutable because they contain circular dependency
+ *
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 09/03/2018
  */
-public interface Introspections {
-
+public interface Introspection {
   enum TypeKind {
     SCALAR,
     OBJECT,
@@ -43,8 +47,7 @@ public interface Introspections {
     INPUT_FIELD_DEFINITION,
   }
 
-  @Getter
-  @Setter
+  @Data
   class Schema {
 
     @NotNull private List<@NotNull Type> types;
@@ -52,10 +55,20 @@ public interface Introspections {
     private Type mutationType;
     private Type subscriptionType;
     @NotNull private List<@NotNull Directive> directives;
+
+    public Type getType(String name){
+      for (Type type : types) {
+        if (Objects.equals(type.getName(), name)) {
+          return type;
+        }
+      }
+      return null;
+    }
   }
 
-  @Getter
-  @Setter
+  @Data
+  @ToString(exclude = {"ofType"})
+  @EqualsAndHashCode(exclude = {"ofType"})
   class Type {
 
     @NotNull private TypeKind kind;
@@ -72,23 +85,25 @@ public interface Introspections {
     // INPUT_OBJECT only
     private List<@NotNull InputValue> inputFields;
     // NON_NULL and LIST only
-    private Type ofType;
+    private Type ofType; // This will cause circular reference
   }
 
-  @Getter
-  @Setter
+  @Data
+  @ToString(exclude = "type")
+  @EqualsAndHashCode(exclude = "type")
   class Field {
 
     @NotNull private String name;
     private String description;
     @NotNull private List<@NotNull InputValue> args;
     @NotNull private Type type;
-    @NotNull private Boolean isDeprecated;
+    @NotNull private Boolean deprecated;
     private String deprecationReason;
   }
 
-  @Getter
-  @Setter
+  @Data
+  @ToString(exclude = "type")
+  @EqualsAndHashCode(exclude = "type")
   class InputValue {
 
     @NotNull private String name;
@@ -97,8 +112,7 @@ public interface Introspections {
     private String defaultValue;
   }
 
-  @Getter
-  @Setter
+  @Data
   class EnumValue {
 
     @NotNull private String name;
@@ -107,8 +121,7 @@ public interface Introspections {
     private String deprecationReason;
   }
 
-  @Getter
-  @Setter
+  @Data
   class Directive {
 
     @NotNull private String name;

@@ -21,7 +21,7 @@ public class ListType implements Type {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private Type type;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ListTypeBuilder
       implements Builders.BuildNode<ListTypeBuilder>, Builders.BuildType<ListTypeBuilder> {}
 }

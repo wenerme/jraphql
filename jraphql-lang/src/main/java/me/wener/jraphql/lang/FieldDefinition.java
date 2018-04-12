@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -29,7 +28,7 @@ public class FieldDefinition implements Definition {
   @NonNull private Type type;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class FieldDefinitionBuilder
       implements Builders.BuildDefinition<FieldDefinitionBuilder>,
           Builders.BuildName<FieldDefinitionBuilder>,

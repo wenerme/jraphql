@@ -23,11 +23,12 @@ public class InterfaceTypeExtension implements TypeExtension {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private String extendTypeName;
+  private String extendByName;
   private String name;
 
   @Builder.Default private List<FieldDefinition> fieldDefinitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class InterfaceTypeExtensionBuilder
       implements BuildTypeExtension<InterfaceTypeExtensionBuilder>,
           BuildFieldDefinitions<InterfaceTypeExtensionBuilder> {}

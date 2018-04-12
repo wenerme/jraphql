@@ -21,6 +21,6 @@ public class NonNullType implements Type {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private Type type;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class NonNullTypeBuilder implements Builders.BuildNode<NonNullTypeBuilder> {}
 }

@@ -24,7 +24,7 @@ public class FragmentDefinition implements ExecutableDefinition {
   private SelectionSet selectionSet;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class FragmentDefinitionBuilder
       implements Builders.BuildDefinition<FragmentDefinitionBuilder>,
           Builders.BuildName<FragmentDefinitionBuilder>,

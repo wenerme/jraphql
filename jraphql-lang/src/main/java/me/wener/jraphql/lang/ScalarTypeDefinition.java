@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -23,7 +22,7 @@ public class ScalarTypeDefinition implements TypeDefinition {
   private String description;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ScalarTypeDefinitionBuilder
       implements Builders.BuildTypeDefinition<ScalarTypeDefinitionBuilder> {}
 }

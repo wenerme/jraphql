@@ -27,7 +27,7 @@ public class SchemaDefinition implements TypeDefinition {
   private String mutationTypeName;
   private String subscriptionTypeName;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class SchemaDefinitionBuilder
       implements Builders.BuildTypeDefinition<SchemaDefinitionBuilder> {}
 }

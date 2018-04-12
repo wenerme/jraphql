@@ -22,6 +22,6 @@ public class Document implements Node {
 
   @NonNull @Builder.Default private List<DocumentDefinition> definitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class DocumentBuilder implements Builders.BuildNode<DocumentBuilder> {}
 }

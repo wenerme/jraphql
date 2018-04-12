@@ -7,6 +7,8 @@ import java.util.List;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import me.wener.jraphql.lang.Builders.BuildInputFieldsDefinitions;
+import me.wener.jraphql.lang.Builders.BuildTypeDefinition;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
@@ -23,10 +25,11 @@ public class InputObjectTypeDefinition implements TypeDefinition {
   private String description;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
-  @NonNull @Builder.Default private List<InputValueDefinition> inputFieldsDefinitions = Collections.emptyList();
+  @NonNull @Builder.Default
+  private List<InputValueDefinition> inputFieldsDefinitions = Collections.emptyList();
 
 
-  @JsonPOJOBuilder(withPrefix = "")
   public static class InputObjectTypeDefinitionBuilder
-      implements Builders.BuildTypeDefinition<InputObjectTypeDefinitionBuilder> {}
+      implements BuildTypeDefinition<InputObjectTypeDefinitionBuilder>,
+          BuildInputFieldsDefinitions<InputObjectTypeDefinitionBuilder> {}
 }

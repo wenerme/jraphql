@@ -24,7 +24,7 @@ public class UnionTypeExtension implements TypeExtension {
   private String name;
   @NonNull @Builder.Default private List<String> unionMemberTypes = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class UnionTypeExtensionBuilder
       implements BuildTypeExtension<UnionTypeExtensionBuilder> {}
 }

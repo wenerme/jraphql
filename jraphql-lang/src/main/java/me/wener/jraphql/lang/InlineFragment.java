@@ -24,7 +24,7 @@ public class InlineFragment implements Selection {
   @Builder.Default private List<Directive> directives = Collections.emptyList();
   private SelectionSet selectionSet;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class InlineFragmentBuilder
       implements Builders.BuildNode<InlineFragmentBuilder>,
           Builders.BuildTypeCondition<InlineFragmentBuilder>,

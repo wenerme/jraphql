@@ -21,9 +21,10 @@ public class ScalarTypeExtension implements TypeExtension {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private String extendTypeName;
+  private String extendByName;
   private String name;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ScalarTypeExtensionBuilder
       implements BuildTypeExtension<ScalarTypeExtensionBuilder> {}
 }

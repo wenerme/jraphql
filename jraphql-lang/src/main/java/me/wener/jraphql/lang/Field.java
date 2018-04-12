@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -26,7 +25,7 @@ public class Field implements Selection {
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   private SelectionSet selectionSet;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class FieldBuilder
       implements Builders.BuildNode<FieldBuilder>,
           Builders.BuildName<FieldBuilder>,

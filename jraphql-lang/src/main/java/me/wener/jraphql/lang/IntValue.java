@@ -19,6 +19,6 @@ public class IntValue implements Value {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private Integer value;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class IntValueBuilder implements Builders.BuildNode<IntValueBuilder> {}
 }

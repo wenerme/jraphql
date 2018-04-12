@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 @JsonSubTypes({
   @JsonSubTypes.Type(value = Argument.class, name = "Argument"),
   @JsonSubTypes.Type(value = BooleanValue.class, name = "BooleanValue"),
+  @JsonSubTypes.Type(value = Comment.class, name = "Comment"),
   @JsonSubTypes.Type(value = Directive.class, name = "Directive"),
   @JsonSubTypes.Type(value = DirectiveDefinition.class, name = "DirectiveDefinition"),
   @JsonSubTypes.Type(value = Document.class, name = "Document"),
@@ -72,7 +73,7 @@ public interface Node extends Serializable {
   /**
    * Node may contain a name
    *
-   * @return name of the node
+   * @return name of the node, possible {@code null} but never empty
    */
   @Nullable
   default String getName() {

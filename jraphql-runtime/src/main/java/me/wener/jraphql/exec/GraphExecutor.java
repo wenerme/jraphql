@@ -12,8 +12,8 @@ public interface GraphExecutor {
   /**
    * Execute the query
    */
-  CompletionStage<Response> execute(
-    ExecuteContext execute, String query, String operationName, Map<String, Object> variables);
+  CompletionStage<ExecuteResult> execute(
+    String query, String operationName, Map<String, Object> variables, Object source);
 
   void validate(String query);
 }

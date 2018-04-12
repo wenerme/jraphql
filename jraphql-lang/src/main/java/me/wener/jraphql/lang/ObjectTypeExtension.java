@@ -23,6 +23,7 @@ public class ObjectTypeExtension implements TypeExtension {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private String extendTypeName;
+  private String extendByName;
   private String name;
 
   @NonNull @Builder.Default private List<String> interfaces = Collections.emptyList();
@@ -30,7 +31,7 @@ public class ObjectTypeExtension implements TypeExtension {
   @NonNull @Builder.Default
   private List<FieldDefinition> fieldDefinitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ObjectTypeExtensionBuilder
       implements BuildTypeExtension<ObjectTypeExtensionBuilder>,
           BuildInterfaces<ObjectTypeExtensionBuilder>,

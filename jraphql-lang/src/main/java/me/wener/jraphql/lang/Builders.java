@@ -1,5 +1,6 @@
 package me.wener.jraphql.lang;
 
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.List;
 
 /**
@@ -11,6 +12,7 @@ import java.util.List;
 public interface Builders {
 
   /** Builder used to build node of language */
+  @JsonPOJOBuilder(withPrefix = "")
   interface Builder {}
 
   interface BuildNode<T> extends Builder {
@@ -45,6 +47,11 @@ public interface Builders {
   interface BuildArgumentDefinitions<T> {
 
     T argumentDefinitions(List<InputValueDefinition> s);
+  }
+
+  interface BuildInputFieldsDefinitions<T> {
+
+    T inputFieldsDefinitions(List<InputValueDefinition> s);
   }
 
   interface BuildArguments<T> {

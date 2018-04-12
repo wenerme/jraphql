@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -20,12 +19,11 @@ public class InputValueDefinition implements Definition {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
 
   @NonNull private String name;
-  @Builder.Default private String description = "";
+  private String description;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private Type type;
   private Value defaultValue;
 
-  @JsonPOJOBuilder(withPrefix = "")
   public static class InputValueDefinitionBuilder
       implements Builders.BuildDefinition<InputValueDefinitionBuilder>,
           Builders.BuildDescription<InputValueDefinitionBuilder>,

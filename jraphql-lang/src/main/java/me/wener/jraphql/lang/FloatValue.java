@@ -19,6 +19,6 @@ public class FloatValue implements Value {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private Float value;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class FloatValueBuilder implements Builders.BuildNode<FloatValueBuilder> {}
 }

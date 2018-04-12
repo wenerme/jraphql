@@ -27,7 +27,7 @@ public class InterfaceTypeDefinition implements TypeDefinition {
   @NonNull @Builder.Default
   private List<FieldDefinition> fieldDefinitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class InterfaceTypeDefinitionBuilder
       implements Builders.BuildTypeDefinition<InterfaceTypeDefinitionBuilder>,
           BuildFieldDefinitions<InterfaceTypeDefinitionBuilder> {}

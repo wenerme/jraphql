@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -21,7 +20,7 @@ public class NamedType implements Type {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private String name;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class NamedTypeBuilder
       implements Builders.BuildNode<NamedTypeBuilder>, Builders.BuildName<NamedTypeBuilder> {}
 }

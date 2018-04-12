@@ -23,6 +23,6 @@ public class NullValue implements Value {
     return null;
   }
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class NullValueBuilder implements Builders.BuildNode<NullValueBuilder> {}
 }

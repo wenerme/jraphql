@@ -23,7 +23,7 @@ public class FragmentSpread implements Selection {
   @NonNull private String fragmentName;
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class FragmentSpreadBuilder
       implements Builders.BuildNode<FragmentSpreadBuilder>,
           Builders.BuildDirectives<FragmentSpreadBuilder> {}

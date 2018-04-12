@@ -19,6 +19,6 @@ public class ListValue implements Value {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Value> value = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ListValueBuilder implements Builders.BuildNode<ListValueBuilder> {}
 }

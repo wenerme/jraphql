@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.github.wenerme.wava</groupId>
         <artifactId>wava-parent</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
         <relativePath/>
     </parent>
     <groupId>me.wener.jraphql</groupId>
@@ -47,7 +47,11 @@
                 <artifactId>jraphql-runtime</artifactId>
                 <version>0.0.4-SNAPSHOT</version>
             </dependency>
-
+            <dependency>
+                <groupId>me.wener.jraphql</groupId>
+                <artifactId>jraphql-parser-antlr</artifactId>
+                <version>0.0.4-SNAPSHOT</version>
+            </dependency>
             <dependency>
                 <groupId>com.graphql-java</groupId>
                 <artifactId>graphql-java</artifactId>

@@ -1,8 +1,10 @@
 package me.wener.jraphql.parser.antlr;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import lombok.Getter;
@@ -19,6 +21,7 @@ import me.wener.jraphql.lang.Builders.BuildDirectives;
 import me.wener.jraphql.lang.Builders.BuildEnumValue;
 import me.wener.jraphql.lang.Builders.BuildEnumValueDefinitions;
 import me.wener.jraphql.lang.Builders.BuildFieldDefinitions;
+import me.wener.jraphql.lang.Builders.BuildInputFieldsDefinitions;
 import me.wener.jraphql.lang.Builders.BuildInterfaces;
 import me.wener.jraphql.lang.Builders.BuildName;
 import me.wener.jraphql.lang.Builders.BuildSelectionSet;
@@ -26,6 +29,7 @@ import me.wener.jraphql.lang.Builders.BuildType;
 import me.wener.jraphql.lang.Builders.BuildTypeCondition;
 import me.wener.jraphql.lang.Builders.BuildTypeExtension;
 import me.wener.jraphql.lang.Builders.BuildValue;
+import me.wener.jraphql.lang.Comment;
 import me.wener.jraphql.lang.Directive;
 import me.wener.jraphql.lang.DirectiveDefinition;
 import me.wener.jraphql.lang.Document;
@@ -100,6 +104,7 @@ import me.wener.jraphql.parser.antlr.GraphQLParser.FragmentSpreadContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.GraphqlContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ImplementsInterfacesContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.InlineFragmentContext;
+import me.wener.jraphql.parser.antlr.GraphQLParser.InputFieldsDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.InputObjectTypeDefinitionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.InputObjectTypeExtensionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.InputValueDefinitionContext;
@@ -134,7 +139,9 @@ import me.wener.jraphql.parser.antlr.GraphQLParser.UnionTypeExtensionContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.ValueContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.VariableContext;
 import me.wener.jraphql.parser.antlr.GraphQLParser.VariableDefinitionContext;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 /**
@@ -146,7 +153,11 @@ import org.antlr.v4.runtime.tree.ParseTree;
 @Getter
 public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBaseVisitor<Node> {
 
+  private final SourceLocation.SourceLocationBuilder sourceLocationBuilder =
+      SourceLocation.builder();
+  private final Comment.CommentBuilder commentBuilder = Comment.builder();
   private String source = "inline";
+  private CommonTokenStream tokens;
 
   @Override
   public Node visit(ParseTree tree) {
@@ -154,10 +165,12 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
       return null;
     }
     Node node = super.visit(tree);
-    log.debug(
-        "Visit {} -> {}",
-        tree.getClass().getSimpleName(),
-        node == null ? null : node.getClass().getSimpleName());
+    if (log.isTraceEnabled()) {
+      log.trace(
+          "Visit {} -> {}",
+          tree.getClass().getSimpleName(),
+          node == null ? null : node.getClass().getSimpleName());
+    }
     return node;
   }
 
@@ -209,6 +222,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   public Node visitObjectTypeDefinition(ObjectTypeDefinitionContext ctx) {
     return extract(ctx, ObjectTypeDefinition.builder()).build();
   }
+  // endregion
 
   @Override
   public BypassNode<List<EnumValueDefinition>> visitEnumValuesDefinition(
@@ -226,7 +240,6 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   public EnumValueDefinition visitEnumValueDefinition(EnumValueDefinitionContext ctx) {
     return extract(ctx, EnumValueDefinition.builder()).build();
   }
-  // endregion
 
   @Override
   public Node visitScalarTypeExtension(ScalarTypeExtensionContext ctx) {
@@ -295,6 +308,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   public NamedType visitNamedType(NamedTypeContext ctx) {
     return extract(ctx, NamedType.builder()).build();
   }
+  // endregion
 
   @Override
   public ListType visitListType(ListTypeContext ctx) {
@@ -311,7 +325,6 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     }
     return builder.build();
   }
-  // endregion
 
   @Override
   public BypassNode<List<String>> visitImplementsInterfaces(ImplementsInterfacesContext ctx) {
@@ -409,6 +422,19 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   }
 
   @Override
+  public BypassNode<List<InputValueDefinition>> visitInputFieldsDefinition(
+      InputFieldsDefinitionContext ctx) {
+    ImmutableList.Builder<InputValueDefinition> list = ImmutableList.builder();
+    if (ctx != null) {
+      for (InputValueDefinitionContext context : ctx.inputValueDefinition()) {
+        list.add(visitInputValueDefinition(context));
+      }
+    }
+
+    return BypassNode.of(list.build());
+  }
+
+  @Override
   public Node visitObjectTypeExtension(ObjectTypeExtensionContext ctx) {
     return extract(ctx, ObjectTypeExtension.builder()).build();
   }
@@ -476,6 +502,8 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     return extract(ctx, Variable.builder()).build();
   }
 
+  // region execution
+
   @Override
   public Node visitStringValue(StringValueContext ctx) {
     return extract(ctx, StringValue.builder()).value(extractString(ctx)).build();
@@ -485,8 +513,6 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   public Node visitInterfaceTypeExtension(InterfaceTypeExtensionContext ctx) {
     return extract(ctx, InterfaceTypeExtension.builder()).build();
   }
-
-  // region execution
 
   @Override
   public Node visitOperationDefinition(OperationDefinitionContext ctx) {
@@ -528,23 +554,25 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
   }
 
   @Override
-  public Node visitField(FieldContext ctx) {
-    return extract(ctx, Field.builder()).alias(extractText(ctx.alias())).build();
+  public Field visitField(FieldContext ctx) {
+    return extract(ctx, Field.builder())
+        .alias(extractText(ctx.alias() == null ? null : ctx.alias().name()))
+        .build();
   }
 
+  // endregion
+
   @Override
-  public Node visitFragmentSpread(FragmentSpreadContext ctx) {
+  public FragmentSpread visitFragmentSpread(FragmentSpreadContext ctx) {
     return extract(ctx, FragmentSpread.builder())
         .fragmentName(extractText(ctx.fragmentName()))
         .build();
   }
 
   @Override
-  public Node visitInlineFragment(InlineFragmentContext ctx) {
+  public InlineFragment visitInlineFragment(InlineFragmentContext ctx) {
     return extract(ctx, InlineFragment.builder()).build();
   }
-
-  // endregion
 
   @Override
   public BypassNode<Entry<String, Value>> visitObjectField(ObjectFieldContext ctx) {
@@ -558,12 +586,8 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     if (builder == null) {
       throw new RuntimeException("require builder");
     }
-    builder.sourceLocation(
-        SourceLocation.builder()
-            .source(source)
-            .line(ctx.getStart().getLine())
-            .column(ctx.getStart().getCharPositionInLine())
-            .build());
+    builder.sourceLocation(extractSourceLocation(ctx));
+    builder.comments(extractComments(ctx));
 
     // TODO comments
 
@@ -621,6 +645,12 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
               visitImplementsInterfaces(ctx.getRuleContext(ImplementsInterfacesContext.class, 0))
                   .getValue());
     }
+    if (builder instanceof BuildInputFieldsDefinitions) {
+      ((BuildInputFieldsDefinitions) builder)
+          .inputFieldsDefinitions(
+              visitInputFieldsDefinition(ctx.getRuleContext(InputFieldsDefinitionContext.class, 0))
+                  .getValue());
+    }
     if (builder instanceof BuildName) {
       ((Builders.BuildName) builder).name(extractText(ctx.getRuleContext(NameContext.class, 0)));
     }
@@ -644,7 +674,7 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
           break;
         case 2:
           b.extendTypeName(extractText(names.get(0)));
-          b.extendByName(extractText(names.get(0)));
+          b.extendByName(extractText(names.get(1)));
           // TOOD support extend ? as ?
           break;
         case 3:
@@ -692,5 +722,46 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     String text = node.getText();
     // TODO Escape
     return text.substring(1, text.length() - 1);
+  }
+
+  private List<Comment> extractComments(ParserRuleContext ctx) {
+    Token start = ctx.getStart();
+    if (start != null) {
+      int tokPos = start.getTokenIndex();
+      List<Token> refChannel = tokens.getHiddenTokensToLeft(tokPos, 2);
+      if (refChannel != null) {
+        return getCommentOnChannel(refChannel);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  private List<Comment> getCommentOnChannel(List<Token> refChannel) {
+    Builder<Comment> comments = ImmutableList.builder();
+    for (Token refTok : refChannel) {
+      String text = refTok.getText();
+      // we strip the leading hash # character but we don't trim because we don't
+      // know the "comment markup".  Maybe its space sensitive, maybe its not.  So
+      // consumers can decide that
+      if (text == null) {
+        continue;
+      }
+      text = text.replaceFirst("^#", "");
+      comments.add(
+          commentBuilder.content(text).sourceLocation(extractSourceLocation(refTok)).build());
+    }
+    return comments.build();
+  }
+
+  private SourceLocation extractSourceLocation(ParserRuleContext ctx) {
+    return extractSourceLocation(ctx.getStart());
+  }
+
+  private SourceLocation extractSourceLocation(Token token) {
+    return sourceLocationBuilder
+        .line(token.getLine())
+        .column(token.getCharPositionInLine())
+        .source(source)
+        .build();
   }
 }

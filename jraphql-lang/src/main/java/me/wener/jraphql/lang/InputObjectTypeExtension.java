@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import me.wener.jraphql.lang.Builders.BuildInputFieldsDefinitions;
 import me.wener.jraphql.lang.Builders.BuildTypeExtension;
 
 /**
@@ -21,9 +22,14 @@ public class InputObjectTypeExtension implements TypeExtension {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
   @NonNull private String extendTypeName;
+  private String extendByName;
   private String name;
 
-  @JsonPOJOBuilder(withPrefix = "")
+  @NonNull @Builder.Default
+  private List<InputValueDefinition> inputFieldsDefinitions = Collections.emptyList();
+
+
   public static class InputObjectTypeExtensionBuilder
-      implements BuildTypeExtension<InputObjectTypeExtensionBuilder> {}
+      implements BuildTypeExtension<InputObjectTypeExtensionBuilder>,
+          BuildInputFieldsDefinitions<InputObjectTypeExtensionBuilder> {}
 }

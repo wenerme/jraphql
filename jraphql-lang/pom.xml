@@ -4,6 +4,7 @@
         <artifactId>jraphql</artifactId>
         <groupId>me.wener.jraphql</groupId>
         <version>0.0.4-SNAPSHOT</version>
+        <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,7 +14,6 @@
         <dependency>
             <groupId>com.github.wenerme.wava</groupId>
             <artifactId>wava-util</artifactId>
-            <version>0.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

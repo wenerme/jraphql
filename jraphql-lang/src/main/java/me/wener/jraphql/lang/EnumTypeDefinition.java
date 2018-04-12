@@ -26,7 +26,7 @@ public class EnumTypeDefinition implements TypeDefinition {
   @NonNull @Builder.Default
   private List<EnumValueDefinition> enumValueDefinitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class EnumTypeDefinitionBuilder
       implements Builders.BuildTypeDefinition<EnumTypeDefinitionBuilder>,
           Builders.BuildEnumValueDefinitions<EnumTypeDefinitionBuilder> {}

@@ -20,6 +20,6 @@ public class ObjectValue implements Value {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull @Builder.Default private Map<String, Value> value = Collections.emptyMap();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class ObjectValueBuilder implements Builders.BuildNode<ObjectValueBuilder> {}
 }

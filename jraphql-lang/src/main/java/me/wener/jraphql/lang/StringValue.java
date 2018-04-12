@@ -1,7 +1,8 @@
 package me.wener.jraphql.lang;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -17,8 +18,10 @@ import lombok.NonNull;
 public class StringValue implements Value {
   @NonNull private SourceLocation sourceLocation;
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
-  @NonNull private String value;
 
-  @JsonPOJOBuilder(withPrefix = "")
+  @JsonInclude(content = Include.ALWAYS) // may contain empty
+  @NonNull
+  private String value;
+
   public static class StringValueBuilder implements Builders.BuildNode<StringValueBuilder> {}
 }

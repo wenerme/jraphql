@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -20,11 +19,11 @@ public class EnumValueDefinition implements Definition {
   @NonNull private SourceLocation sourceLocation;
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
 
-  @Builder.Default private String description = "";
+  private String description;
   @NonNull private String name; // enumValue
   @NonNull @Builder.Default private List<Directive> directives = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class EnumValueDefinitionBuilder
       implements Builders.BuildDefinition<EnumValueDefinitionBuilder>,
           Builders.BuildDirectives<EnumValueDefinitionBuilder>,

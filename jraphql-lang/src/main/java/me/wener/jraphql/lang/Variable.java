@@ -19,7 +19,7 @@ public class Variable implements Value {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private String name;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class VariableBuilder
       implements Builders.BuildNode<VariableBuilder>, Builders.BuildName<VariableBuilder> {}
 }

@@ -19,6 +19,10 @@ public class SourceLocation {
   private int column;
   @NonNull private String source;
 
+  public String toLocation() {
+    return source + ":" + line + ":" + column;
+  }
+
   @JsonPOJOBuilder(withPrefix = "")
   public static class SourceLocationBuilder {}
 }

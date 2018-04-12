@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -28,10 +27,7 @@ public class DirectiveDefinition implements TypeDefinition {
   @NonNull @Builder.Default
   private List<InputValueDefinition> argumentDefinitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
   public static class DirectiveDefinitionBuilder
-      implements Builders.BuildNode<DirectiveDefinitionBuilder>,
-          Builders.BuildName<DirectiveDefinitionBuilder>,
-          Builders.BuildDirectives<DirectiveDefinitionBuilder>,
+      implements Builders.BuildTypeDefinition<DirectiveDefinitionBuilder>,
           Builders.BuildArgumentDefinitions<DirectiveDefinitionBuilder> {}
 }

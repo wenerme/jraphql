@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -19,6 +18,6 @@ public class BooleanValue implements Value {
   @NonNull @Builder.Default private List<Comment> comments = Collections.emptyList();
   @NonNull private Boolean value;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class BooleanValueBuilder implements Builders.BuildNode<BooleanValueBuilder> {}
 }

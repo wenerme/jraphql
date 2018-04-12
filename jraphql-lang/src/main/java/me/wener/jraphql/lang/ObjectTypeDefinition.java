@@ -1,7 +1,7 @@
 package me.wener.jraphql.lang;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -30,9 +30,22 @@ public class ObjectTypeDefinition implements TypeDefinition {
   @NonNull @Builder.Default
   private List<FieldDefinition> fieldDefinitions = Collections.emptyList();
 
-  @JsonPOJOBuilder(withPrefix = "")
+  public static ObjectTypeDefinitionBuilder builder() {
+    return new ObjectTypeDefinitionBuilder() {
+      @Override
+      public ObjectTypeDefinition build() {
+        prebuild();
+        return super.build();
+      }
+    };
+  }
+
   public static class ObjectTypeDefinitionBuilder
       implements Builders.BuildTypeDefinition<ObjectTypeDefinitionBuilder>,
           BuildInterfaces<ObjectTypeDefinitionBuilder>,
-          BuildFieldDefinitions<ObjectTypeDefinitionBuilder> {}
+          BuildFieldDefinitions<ObjectTypeDefinitionBuilder> {
+    protected void prebuild() {
+      interfaces = ImmutableSet.copyOf(interfaces).asList();
+    }
+  }
 }

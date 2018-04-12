@@ -22,7 +22,7 @@ public class VariableDefinition implements Definition {
   private Type type;
   private Value defaultValue;
 
-  @JsonPOJOBuilder(withPrefix = "")
+
   public static class VariableDefinitionBuilder
       implements Builders.BuildDefinition<VariableDefinitionBuilder>,
           Builders.BuildType<VariableDefinitionBuilder>,
