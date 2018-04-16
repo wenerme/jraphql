@@ -1,5 +1,6 @@
 package me.wener.jraphql.exec;
 
+import com.github.wenerme.wava.util.Later;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ import me.wener.jraphql.lang.Field;
 import me.wener.jraphql.lang.GraphLanguageException;
 import me.wener.jraphql.lang.ObjectTypeDefinition;
 import me.wener.jraphql.lang.OperationDefinition;
-import me.wener.jraphql.lang.Selection;
 import me.wener.jraphql.lang.SelectionSet;
 import me.wener.jraphql.lang.Type;
 import me.wener.jraphql.lang.TypeDefinition;
@@ -51,7 +51,7 @@ public class Execution implements ExecuteContext {
   @NonNull private String operationType;
   @NonNull private OperationDefinition operationDefinition;
   @NonNull private ObjectTypeDefinition operationTypeDefinition;
-  @NonNull private FieldResolver resolver;
+  @NonNull private FieldResolverRegistry resolverRegistry;
   private TypeResolver typeResolver;
 
   private List<Throwable> errors;
@@ -74,7 +74,7 @@ public class Execution implements ExecuteContext {
       return _extractFieldValue(context, fieldType, source);
     } catch (Throwable e) {
       log.warn("Failed Extract Field {} {}", GraphQLGenerator.generateType(fieldType), source, e);
-      return DefaultGraphExecutor.completeExceptionally(e);
+      return Later.completeExceptionally(e);
     }
   }
 
@@ -113,7 +113,7 @@ public class Execution implements ExecuteContext {
         if (source == null) {
           return CompletableFuture.completedFuture(null);
         } else if (!(source instanceof Iterable)) {
-          return DefaultGraphExecutor.completeExceptionally(
+          return Later.completeExceptionally(
               new GraphExecuteException("list need iterable result"));
         } else {
           // Expand
@@ -143,26 +143,56 @@ public class Execution implements ExecuteContext {
     }
   }
 
-  protected Object doResolveField(ExecuteFieldContext context) {
+  protected CompletionStage<?> doResolveField(ExecuteFieldContext context) {
     try {
-      return resolver.resolve(context);
+      FieldResolver resolver = getFieldResolver(context);
+      CompletionStage<Object> resolved =
+          CompletableFuture.supplyAsync(() -> resolver.resolve(context), getExecutorService());
+      return resolved
+          .thenCompose(
+              v -> {
+                if (v instanceof CompletionStage) {
+                  return ((CompletionStage<Object>) v).toCompletableFuture();
+                }
+                return CompletableFuture.completedFuture(v);
+              })
+          .thenCompose(
+              v -> {
+                if (v instanceof PostResolver) {
+                  return Later.asCompletionStage(
+                      ((PostResolver) v).postResolve(context, resolver, v));
+                } else if (resolver instanceof PostResolver) {
+                  return Later.asCompletionStage(
+                      ((PostResolver) resolver).postResolve(context, resolver, v));
+                }
+                return CompletableFuture.completedFuture(v);
+              })
+          .thenApply(
+              v -> {
+                if (context.isUnresolved(v)) {
+                  throw new GraphExecuteException(
+                      String.format(
+                          "unresolved field `%s.%s`",
+                          context.getObjectName(), context.getFieldName()));
+                }
+                return v;
+              });
     } catch (Exception e) {
-      return DefaultGraphExecutor.completeExceptionally(e);
+      log.warn("Failed to ResolveField `{}`.`{}`", context.getObjectName(), context.getField(), e);
+      return Later.completeExceptionally(e);
     }
   }
 
+  private FieldResolver getFieldResolver(ExecuteFieldContext context) {
+    return resolverRegistry.lookup(context);
+  }
+
   protected void _executeType(ExecuteTypeContext context) {
-    for (Selection selection : context.getFieldSelection().values()) {
-      Field field = selection.unwrap(Field.class);
-
-      //        ExecuteFieldContext fieldContext = null;
-      //        try {
+    for (Field field : context.getFieldSelection().values()) {
       ExecuteFieldContext fieldContext = context.createFieldContext(field);
-      //        } catch (Exception e) {
-      //        }
-      CompletionStage<?> source = DefaultGraphExecutor.asAsync(doResolveField(fieldContext));
+      CompletionStage<?> source = doResolveField(fieldContext);
 
-      source.whenCompleteAsync(
+      source.whenComplete(
           (v, e) -> {
             CompletableFuture<Object> value = fieldContext.getValue();
             if (e != null) {
@@ -171,10 +201,9 @@ public class Execution implements ExecuteContext {
               value.complete(null);
             } else {
               extractFieldValue(fieldContext, fieldContext.getFieldType(), v)
-                  .whenCompleteAsync(DefaultGraphExecutor.complete(value));
+                  .whenCompleteAsync(Later.complete(value));
             }
-          },
-          context.getExecutorService());
+          });
     }
     context.aggregateValue();
   }
@@ -199,7 +228,7 @@ public class Execution implements ExecuteContext {
         createTypeContext(operationTypeDefinition, operationDefinition.getSelectionSet(), source);
 
     executeType(context);
-    context.getValue().whenComplete(DefaultGraphExecutor.complete(result));
+    context.getValue().whenComplete(Later.complete(result));
   }
 
   public TypeDefinition resolveType(ExecuteFieldContext context, Object source, String name) {
@@ -210,12 +239,12 @@ public class Execution implements ExecuteContext {
     }
 
     if (resolver == null) {
-      throw new GraphExecuteException("can not resolve type " + name);
+      throw Errors.typeResolveFailed(name);
     }
 
     Object target = resolver.resolveType(context, source, name);
     if (target == null) {
-      throw new GraphExecuteException("can not resolve type " + name);
+      throw Errors.typeResolveFailed(name);
     }
 
     if (target instanceof String) {
@@ -223,7 +252,8 @@ public class Execution implements ExecuteContext {
     } else if (target instanceof TypeDefinition) {
       targetType = (TypeDefinition) target;
     } else {
-      throw new GraphExecuteException("incorrect resolve type " + name);
+      // Incorrect
+      throw Errors.typeResolveFailed(name);
     }
 
     return targetType;
@@ -291,6 +321,7 @@ public class Execution implements ExecuteContext {
         Object value = super.variables.get(name);
         if (value == null) {
           if (definition.getDefaultValue() == null) {
+            // TODO should i use null for missing nonnull variable
             throw new GraphLanguageException(String.format("variable '%s' not found", name));
           }
 
@@ -298,7 +329,7 @@ public class Execution implements ExecuteContext {
         }
 
         // TODO Handle error
-        super.typeSystemDocument.checkValueType(type, value);
+        TypeSystemDocument.checkValueType(type, value);
       }
     }
   }

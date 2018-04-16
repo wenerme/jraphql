@@ -35,7 +35,7 @@ import me.wener.jraphql.lang.UnionTypeDefinition;
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 2018/4/12
  */
-public class IntrospectionBuilder {
+class IntrospectionBuilder {
 
   private final TypeSystemDocument typeSystemDocument;
 

@@ -68,9 +68,7 @@ public class ExecuteTypeContext extends ExecutableContext {
           arguments.put(name, Langs.resolveValue(definition.getDefaultValue()));
         }
       }
-      getExecution()
-          .getTypeSystemDocument()
-          .checkValueType(definition.getType(), arguments.get(name));
+      TypeSystemDocument.checkValueType(definition.getType(), arguments.get(name));
     }
 
     ExecuteFieldContext context =
@@ -94,7 +92,7 @@ public class ExecuteTypeContext extends ExecutableContext {
         fields
             .values()
             .stream()
-            .map(v -> v.getValue().toCompletableFuture())
+            .map(ExecuteFieldContext::getValue)
             .toArray(CompletableFuture[]::new);
     CompletableFuture.allOf(futures)
         .whenCompleteAsync(

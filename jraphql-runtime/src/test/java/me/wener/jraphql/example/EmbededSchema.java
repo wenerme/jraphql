@@ -32,7 +32,7 @@ public class EmbededSchema {
             .parse(
                 BatchParseOption.builder()
                     .parseSchema()
-                    .addResourceContent("meta.graphqls")
+                    .addResourceContent("jraphql/meta.graphqls")
                     .build())
             .getOrThrow();
 

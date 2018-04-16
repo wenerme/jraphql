@@ -56,7 +56,7 @@ public interface Introspection {
     private Type subscriptionType;
     @NotNull private List<@NotNull Directive> directives;
 
-    public Type getType(String name){
+    public Type getType(String name) {
       for (Type type : types) {
         if (Objects.equals(type.getName(), name)) {
           return type;

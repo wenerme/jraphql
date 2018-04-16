@@ -57,13 +57,13 @@ public interface GraphQLGenerator {
     return '#' + v.getContent();
   }
 
-//  static CharSequence generateScalarType(ScalarTypeDefinition v) {
-//    StringBuilder sb = new StringBuilder();
-//    if (!v.getComments().isEmpty()) {
-//      sb.append(generateComments(v.getComments()));
-//    }
-//    return sb;
-//  }
+  //  static CharSequence generateScalarType(ScalarTypeDefinition v) {
+  //    StringBuilder sb = new StringBuilder();
+  //    if (!v.getComments().isEmpty()) {
+  //      sb.append(generateComments(v.getComments()));
+  //    }
+  //    return sb;
+  //  }
 
   static CharSequence generateString(String v) {
     return '"' + v + '"';

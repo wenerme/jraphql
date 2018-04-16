@@ -531,7 +531,9 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
 
   @Override
   public VariableDefinition visitVariableDefinition(VariableDefinitionContext ctx) {
-    return extract(ctx, VariableDefinition.builder()).name(extractText(ctx.variable())).build();
+    return extract(ctx, VariableDefinition.builder())
+        .name(extractText(ctx.variable().name()))
+        .build();
   }
 
   @Override

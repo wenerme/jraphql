@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -63,14 +62,14 @@ public class TypeSystemDocument {
   static void checkValueType(Type type, Object value) {
     if (type.getKind().isNonnull()) {
       if (value == null) {
-        throw new GraphLanguageException("null for nonnull variable");
+        throw Errors.typeMismatch("nonnull", "null", type.getSourceLocation());
       }
       checkValueType(type.getType(), value);
       return;
     }
     if (value != null && type.getKind().isList()) {
       if (!(value instanceof Iterable)) {
-        throw new GraphLanguageException("list need a iterable value");
+        throw Errors.typeMismatch("list", "Non Iterable", type.getSourceLocation());
       }
       for (Object o : (Iterable) (value)) {
         checkValueType(type.getType(), value);
@@ -78,66 +77,33 @@ public class TypeSystemDocument {
       return;
     }
     if (value != null && type.getKind().isNamed()) {
-      switch (type.unwrap(NamedType.class).getName()) {
+      String typeName = type.unwrap(NamedType.class).getName();
+      boolean match = true;
+      String expected = typeName;
+      String actually = value.getClass().getSimpleName();
+      switch (typeName) {
         case "Int":
-          if (!(value instanceof Long)) {
-            throw new GraphLanguageException(
-                "Int type expected but found " + value.getClass().getSimpleName());
-          }
+          match = value instanceof Long;
           break;
         case "Float":
-          if (!(value instanceof Double)) {
-            throw new GraphLanguageException(
-                "Float type expected but found " + value.getClass().getSimpleName());
-          }
+          match = value instanceof Double;
           break;
         case "String":
-          if (!(value instanceof String)) {
-            throw new GraphLanguageException(
-                "String type expected but found " + value.getClass().getSimpleName());
-          }
+          match = value instanceof String;
           break;
         case "Boolean":
-          if (!(value instanceof Boolean)) {
-            throw new GraphLanguageException(
-                "Boolean type expected but found " + value.getClass().getSimpleName());
-          }
+          match = value instanceof Boolean;
+          break;
+        case "Object":
+          match = true;
           break;
       }
-      // TODO
+      if (!match) {
+        throw Errors.typeMismatch(expected, actually, type.getSourceLocation());
+      }
+      // TODO enum, input, object, interface, scalar
     }
   }
-
-  //  public me.wener.jraphql.exec.TypeKind getTypeKind(String typeName) {
-  //    TypeDefinition definition = definitions.get(typeName);
-  //    switch (definition.getKind()) {
-  //      case SCALAR:
-  //        return me.wener.jraphql.exec.TypeKind.SCALAR;
-  //      case ENUM:
-  //        return me.wener.jraphql.exec.TypeKind.ENUM;
-  //      case OBJECT:
-  //        return me.wener.jraphql.exec.TypeKind.OBJECT;
-  //      case INTERFACE:
-  //        return me.wener.jraphql.exec.TypeKind.INTERFACE;
-  //      case UNION:
-  //        return me.wener.jraphql.exec.TypeKind.UNION;
-  //      case INPUT_OBJECT:
-  //        return me.wener.jraphql.exec.TypeKind.INPUT_OBJECT;
-  //    }
-  //    throw new AssertionError();
-  //  }
-  //
-  //  public me.wener.jraphql.exec.TypeKind getTypeKind(Type type) {
-  //    switch (type.getKind()) {
-  //      case NAMED:
-  //        return getTypeKind(type.getName());
-  //      case NON_NULL:
-  //        return me.wener.jraphql.exec.TypeKind.NON_NULL;
-  //      case LIST:
-  //        return me.wener.jraphql.exec.TypeKind.LIST;
-  //    }
-  //    throw new AssertionError();
-  //  }
 
   public List<DirectiveDefinition> getDirectives() {
     return getAll(DirectiveDefinition.class);
@@ -159,14 +125,37 @@ public class TypeSystemDocument {
     return null;
   }
 
-  public Optional<TypeDefinition> getDefinition(String name) {
-    return Optional.ofNullable(definitions.get(name));
+  public List<TypeDefinition> findTypesBySource(String source) {
+    List<TypeDefinition> list = Lists.newArrayList();
+    for (TypeDefinition definition : definitions.values()) {
+      if (definition.getSourceLocation().getSource().equals(source)) {
+        list.add(definition);
+      }
+    }
+    return list;
+  }
+
+  // TODO may contain types defined in other files
+  //  public List<TypeDefinition> getRelateTypes(SchemaDefinition definition) {
+  //    ArrayList<TypeDefinition> list = Lists.newArrayList();
+  //    list.add(requireDefinition(definition.getQueryTypeName()));
+  //    if (definition.getMutationTypeName() == null) {
+  //      list.add(requireDefinition(definition.getMutationTypeName()));
+  //    }
+  //    if (definition.getSubscriptionTypeName() == null) {
+  //      list.add(requireDefinition(definition.getSubscriptionTypeName()));
+  //    }
+  //    return list;
+  //  }
+
+  public TypeDefinition getDefinition(String name) {
+    return definitions.get(name);
   }
 
   public TypeDefinition requireDefinition(String name) {
     TypeDefinition definition = definitions.get(name);
     if (definition == null) {
-      throw new GraphLanguageException(String.format("type '%s' not found", name));
+      throw Errors.typeNotFound(name);
     }
     return definition;
   }
@@ -191,8 +180,8 @@ public class TypeSystemDocument {
     return definition;
   }
 
-  public Optional<FieldDefinition> getFieldDefinition(String typeName, String fieldName) {
-    return Optional.ofNullable(_getFieldDefinition(typeName, fieldName));
+  public FieldDefinition getFieldDefinition(String typeName, String fieldName) {
+    return _getFieldDefinition(typeName, fieldName);
   }
 
   public FieldDefinition requireFieldDefinition(String typeName, String fieldName) {
@@ -402,5 +391,4 @@ public class TypeSystemDocument {
       //      Introspection.Schema.builder()
     }
   }
-
 }

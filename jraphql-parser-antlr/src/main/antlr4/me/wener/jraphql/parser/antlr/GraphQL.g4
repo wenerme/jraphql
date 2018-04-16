@@ -205,7 +205,7 @@ objectField : name ':' value ;
 // 2.10 Variables
 variable : '$' name ;
 variableDefinitions : '(' variableDefinition+ ')' ;
-variableDefinition : variable ':' type defaultValue? ;
+variableDefinition : variable ':' type ( '='? defaultValue)? ;
 defaultValue : value ;
 
 // 2.11 Input Types

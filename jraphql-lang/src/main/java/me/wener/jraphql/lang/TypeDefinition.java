@@ -1,7 +1,6 @@
 package me.wener.jraphql.lang;
 
 import java.util.List;
-import javax.annotation.Nonnull;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
@@ -9,8 +8,7 @@ import javax.annotation.Nonnull;
  */
 public interface TypeDefinition extends DocumentDefinition {
 
-  /** @return name to the type */
-  @Nonnull
+  /** @return name to the type, may return {@code null} for schema */
   String getName();
 
   String getDescription();

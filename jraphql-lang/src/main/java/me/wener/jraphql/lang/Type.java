@@ -1,5 +1,6 @@
 package me.wener.jraphql.lang;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -25,6 +26,7 @@ public interface Type extends Node {
   }
 
   /** @return Deepest type name */
+  @Nonnull
   default String resolveTypeName() {
     if (this.getKind().isNamed()) {
       return this.getName();

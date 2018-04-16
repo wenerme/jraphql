@@ -20,7 +20,7 @@ import me.wener.jraphql.example.StarWarResolverV1.StarWarData;
 import me.wener.jraphql.exec.DefaultGraphExecutor;
 import me.wener.jraphql.exec.ExecuteResult;
 import me.wener.jraphql.exec.MetaResolver;
-import me.wener.jraphql.exec.TableExecuteResolver;
+import me.wener.jraphql.exec.TableFieldResolverRegistry;
 import me.wener.jraphql.exec.TypeSystemDocument;
 import me.wener.jraphql.parse.GraphParser;
 import me.wener.jraphql.parse.GraphParser.BatchParseOption;
@@ -49,45 +49,36 @@ public class StarWarApplication {
   @Bean
   public RouterFunction<ServerResponse> gqlRouterFunction() throws IOException {
     GraphParser parser = GraphParser.load();
+    TypeSystemDocument document =
+        TypeSystemDocument.builder()
+            //                    .addMetaDocument()
+            .addDocument(
+                parser
+                    .parse(
+                        BatchParseOption.builder()
+                            .parseSchema()
+                            .addResourceContent("jraphql/meta.graphqls")
+                            .addResourceContent("starwars.graphqls")
+                            .build())
+                    .getOrThrow())
+            .build();
+
     MetaResolver metaResolver = new MetaResolver();
     StarWarResolverV1 starWarResolver = new StarWarResolverV1();
-    TableExecuteResolver resolver =
-        TableExecuteResolver.builder()
-            .forType(
-                starWarResolver,
-                "Query",
-                "Starship",
-                "Character",
-                "Human",
-                "Droid",
-                "FriendsEdge",
-                "FriendsConnection",
-                "PageInfo",
-                "Mutation",
-                "Review",
-                "ReviewInput")
+    TableFieldResolverRegistry resolver =
+        TableFieldResolverRegistry.builder()
+            .forTypes(starWarResolver, document.findTypesBySource("starwars.graphqls"))
             .forMeta(metaResolver)
             .fallback(metaResolver)
             .build();
     StarWarData source = StarWarResolverV1.loadData();
+
     DefaultGraphExecutor executor =
         DefaultGraphExecutor.builder()
             .parser(parser)
-            .resolver(resolver)
+            .resolverRegistry(resolver)
             .typeResolver(starWarResolver)
-            .typeSystemDocument(
-                TypeSystemDocument.builder()
-                    //                    .addMetaDocument()
-                    .addDocument(
-                        parser
-                            .parse(
-                                BatchParseOption.builder()
-                                    .parseSchema()
-                                    .addResourceContent("meta.graphqls")
-                                    .addResourceContent("starwars.graphqls")
-                                    .build())
-                            .getOrThrow())
-                    .build())
+            .typeSystemDocument(document)
             .build();
 
     ObjectMapper mapper =
@@ -124,7 +115,7 @@ public class StarWarApplication {
 
   @Bean
   public RouterFunction<ServerResponse> graphiqlRouterFunction(
-      @Value("classpath:/static/graphiql.html") Resource index) {
+      @Value("classpath:/jraphql/graphiql.html") Resource index) {
     return route(GET("/"), request -> ok().contentType(TEXT_HTML).syncBody(index));
   }
 

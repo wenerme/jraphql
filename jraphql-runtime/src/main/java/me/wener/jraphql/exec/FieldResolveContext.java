@@ -34,4 +34,13 @@ public interface FieldResolveContext {
   }
 
   Map<String, Object> getArguments();
+
+  /** @return a value represent unresolved, how to handle the unresolved is decided by execution */
+  default Object unresolved() {
+    return AlternativeValue.UNRESOLVED;
+  }
+
+  default boolean isUnresolved(Object source) {
+    return AlternativeValue.UNRESOLVED == source;
+  }
 }

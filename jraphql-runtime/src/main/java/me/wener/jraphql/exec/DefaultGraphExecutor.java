@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiConsumer;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,40 +24,17 @@ import me.wener.jraphql.parse.GraphParser;
 @Getter
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Slf4j
 public class DefaultGraphExecutor implements GraphExecutor {
 
   private GraphParser parser;
   private ExecutorService executorService = MoreExecutors.newDirectExecutorService();
   private TypeSystemDocument typeSystemDocument;
-  private FieldResolver resolver;
+  private FieldResolverRegistry resolverRegistry;
   private TypeResolver typeResolver;
 
   private Table<String, String, FieldResolver> resolvers = HashBasedTable.create();
-
-  public static BiConsumer<Object, Throwable> complete(CompletableFuture<Object> value) {
-    return (v, e) -> {
-      if (e != null) {
-        value.completeExceptionally(e);
-      } else {
-        value.complete(v);
-      }
-    };
-  }
-
-  public static <T> CompletionStage<T> completeExceptionally(Throwable e) {
-    CompletableFuture<T> future = new CompletableFuture<>();
-    future.completeExceptionally(e);
-    return future;
-  }
-
-  public static CompletionStage<Object> asAsync(Object o) {
-    if (o instanceof CompletionStage) {
-      return (CompletionStage<Object>) o;
-    }
-    return CompletableFuture.completedFuture(o);
-  }
 
   @Override
   public CompletionStage<ExecuteResult> execute(
@@ -85,7 +61,7 @@ public class DefaultGraphExecutor implements GraphExecutor {
             .variables(variables)
             .source(source)
             .executorService(executorService)
-            .resolver(resolver)
+            .resolverRegistry(resolverRegistry)
             .typeResolver(typeResolver)
             .build();
 
@@ -104,4 +80,11 @@ public class DefaultGraphExecutor implements GraphExecutor {
 
   @Override
   public void validate(String query) {}
+
+  public static class DefaultGraphExecutorBuilder {
+    public DefaultGraphExecutorBuilder resolver(FieldResolver resolver) {
+      resolverRegistry = FieldResolverRegistry.identity(resolver);
+      return this;
+    }
+  }
 }
