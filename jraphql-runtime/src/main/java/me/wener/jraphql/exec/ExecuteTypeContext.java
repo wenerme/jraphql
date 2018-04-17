@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -139,10 +140,13 @@ public class ExecuteTypeContext extends ExecutableContext {
 
     protected boolean isTypeMatch(String typeCondition) {
       if (typeCondition != null) {
-        // TODO possible type check
-        if (!super.objectTypeDefinition.getName().equals(typeCondition)) {
-          return false;
+        if (Objects.equals(super.objectTypeDefinition.getName(), typeCondition)) {
+          return true;
         }
+        if (super.objectTypeDefinition.getInterfaces().contains(typeCondition)) {
+          return true;
+        }
+        return false;
       }
       return true;
     }

@@ -15,8 +15,86 @@ jraphql-graphql-java-adapter | Adapter for [graphql-java/graphql-java](https://g
 
 ### StarWar
 
-* [StarWarApplication](./jraphql-runtime/src/test/java/me/wener/jraphql/example/StarWarApplication.java) is a SpringBoot based, request handled by WebFlux.
-* [StarWarResolver](./jraphql-runtime/src/test/java/me/wener/jraphql/example/StarWarResolver.java) resolve the StarWar schema. 
+* [StarWarApplication](./jraphql-runtime/src/test/java/me/wener/jraphql/example/StarWarApplication.java)
+    * SpringBoot WebFlux based
+    * start and visite http://localhost:8080
+* [StarWarResolver](./jraphql-runtime/src/test/java/me/wener/jraphql/example/StarWarResolverV1.java)
+    * resolve the StarWar schema. 
+
+Queries you can try
+
+```graphql
+mutation addRev {
+  createReview(episode: EMPIRE, review: {stars: 4, commentary: "Ok Good"}) {
+    stars
+    commentary
+  }
+}
+
+query rev($e:Episode = EMPIRE) {
+  hero(episode: $e) {
+    id
+    name
+    appearsIn
+  }
+  reviews(episode: $e) {
+    stars
+    commentary
+  }
+}
+
+query search {
+  search(text: "o") {
+    __typename
+    ... on Human {
+      id
+      name
+    }
+    ... on Droid {
+      primaryFunction
+    }
+    ... on Starship {
+      length
+    }
+  }
+}
+
+query baseQuery {
+  starship(id: "3000") {
+    id
+    name
+    length(unit: FOOT)
+  }
+  character(id: "2000") {
+    id
+    ... on Human {
+      mass
+      starships {
+        name
+      }
+    }
+    ... on Droid {
+      name
+      appearsIn
+    }
+  }
+  human(id: "1003") {
+    friendsConnection(after: "1002") {
+      friends {
+        name
+      }
+      pageInfo {
+        hasNextPage
+        startCursor
+        endCursor
+      }
+    }
+    friends {
+      name
+    }
+  }
+}
+```
 
 ### Embedded Schema
 
