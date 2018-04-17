@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import me.wener.jraphql.lang.Argument;
 import me.wener.jraphql.lang.Directive;
 import me.wener.jraphql.lang.Field;
@@ -33,6 +34,7 @@ import me.wener.jraphql.lang.SelectionSet;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @Builder(toBuilder = true)
+@Slf4j
 public class ExecuteTypeContext extends ExecutableContext {
 
   private Object source;
@@ -40,8 +42,9 @@ public class ExecuteTypeContext extends ExecutableContext {
   private ObjectTypeDefinition objectTypeDefinition;
   private SelectionSet selectionSet;
   private Map<String, ExecuteFieldContext> fields = Maps.newLinkedHashMap();
-  private ExecuteFieldContext parentFieldContext;
   private CompletableFuture<Object> value = new CompletableFuture<>();
+
+  private ExecuteFieldContext parent;
 
   private List<Selection> skippedSelection;
   private List<Selection> mismatchSelection;
@@ -93,24 +96,34 @@ public class ExecuteTypeContext extends ExecutableContext {
         fields
             .values()
             .stream()
-            .map(ExecuteFieldContext::getValue)
+            .map(v -> v.getValue().exceptionally(ex -> swallowException(v, ex)))
             .toArray(CompletableFuture[]::new);
     CompletableFuture.allOf(futures)
         .whenCompleteAsync(
             (v, e) -> {
               if (e != null) {
+                // SHOULD NOT HAPPEN
                 value.completeExceptionally(e);
+                log.warn("Unexpected exception", e);
               } else {
                 // match the order of selection
                 Map<String, Object> map = Maps.newLinkedHashMap();
                 for (ExecuteFieldContext context : fields.values()) {
-                  map.put(
-                      context.getAliasOrName(),
-                      context.getValue().toCompletableFuture().getNow(null));
+                  CompletableFuture<Object> value = context.getValue();
+                  if (value.isCompletedExceptionally()) {
+                    map.put(context.getAliasOrName(), null);
+                  } else {
+                    map.put(context.getAliasOrName(), value.toCompletableFuture().getNow(null));
+                  }
                 }
                 value.complete(map);
               }
             });
+  }
+
+  public Object swallowException(ExecuteFieldContext context, Throwable e) {
+    execution.addError(context, e);
+    return null;
   }
 
   public static class ExecuteTypeContextBuilder {

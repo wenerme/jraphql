@@ -12,6 +12,4 @@ public interface GraphExecutor {
   /** Execute the query */
   CompletionStage<ExecuteResult> execute(
       String query, String operationName, Map<String, Object> variables, Object source);
-
-  void validate(String query);
 }

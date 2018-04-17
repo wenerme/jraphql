@@ -2,6 +2,7 @@ package me.wener.jraphql.exec;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,12 +47,18 @@ class ExecuteFieldContext extends ExecutableContext implements FieldResolveConte
     ExecuteTypeContext typeContext =
         ExecuteTypeContext.builder()
             .execution(execution)
-            .parentFieldContext(this)
+            .parent(this)
             .source(source)
             .objectTypeDefinition(definition.unwrap(ObjectTypeDefinition.class))
             .selectionSet(field.getSelectionSet())
             .build();
     return typeContext;
+  }
+
+  @Override
+  public void collectPath(Consumer<String> consumer) {
+    super.collectPath(consumer);
+    consumer.accept(getAliasOrName());
   }
 
   @Override

@@ -15,5 +15,5 @@ public class ExecuteResult {
   private Object data;
 
   @JsonInclude(content = Include.NON_EMPTY)
-  private List<Throwable> errors;
+  private List<ExecuteError> errors;
 }

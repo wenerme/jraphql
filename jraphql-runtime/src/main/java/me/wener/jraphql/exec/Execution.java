@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import me.wener.jraphql.lang.Field;
@@ -54,7 +55,7 @@ public class Execution implements ExecuteContext {
   @NonNull private FieldResolverRegistry resolverRegistry;
   private TypeResolver typeResolver;
 
-  private List<Throwable> errors;
+  private List<ExecutionError> errors;
   private CompletableFuture<Object> result = new CompletableFuture<>();
 
   @NonNull private Map<String, Object> variables;
@@ -145,7 +146,7 @@ public class Execution implements ExecuteContext {
 
   protected CompletionStage<?> doResolveField(ExecuteFieldContext context) {
     try {
-      FieldResolver resolver = getFieldResolver(context);
+      FieldResolver resolver = lookupFieldResolver(context);
       CompletionStage<Object> resolved =
           CompletableFuture.supplyAsync(() -> resolver.resolve(context), getExecutorService());
       return resolved
@@ -183,7 +184,10 @@ public class Execution implements ExecuteContext {
     }
   }
 
-  private FieldResolver getFieldResolver(ExecuteFieldContext context) {
+  protected FieldResolver lookupFieldResolver(ExecuteFieldContext context) {
+    if (context.getSource() instanceof FieldResolver) {
+      return (FieldResolver) context.getSource();
+    }
     return resolverRegistry.lookup(context);
   }
 
@@ -208,8 +212,19 @@ public class Execution implements ExecuteContext {
     context.aggregateValue();
   }
 
-  public void addErrors(Throwable... throwables) {
-    Collections.addAll(errors, throwables);
+  public Execution addError(ExecuteFieldContext context, Throwable e) {
+    ExecutionError error = new ExecutionError();
+    error
+        .setContext(context)
+        .setException(e)
+        .setMessage(e.getMessage())
+        .setPath(context.collectPath());
+    return addError(error);
+  }
+
+  public Execution addError(ExecutionError err) {
+    errors.add(err);
+    return this;
   }
 
   ExecuteTypeContext createTypeContext(
@@ -259,15 +274,18 @@ public class Execution implements ExecuteContext {
     return targetType;
   }
 
+  @Accessors(fluent = true, chain = true)
   public static class ExecutionBuilder {
 
-    protected List<Throwable> errors = Lists.newArrayList();
-
+    // This is thread safe, will access by async
     @Setter(AccessLevel.NONE)
+    protected List<ExecutionError> errors = Lists.newCopyOnWriteArrayList();
+
+    @Setter(AccessLevel.PRIVATE)
     protected String operationType;
 
-    public ExecutionBuilder addErrors(Throwable... throwables) {
-      Collections.addAll(errors, throwables);
+    public ExecutionBuilder addError(ExecutionError err) {
+      errors.add(err);
       return this;
     }
   }
@@ -281,6 +299,19 @@ public class Execution implements ExecuteContext {
     }
 
     private void prebuild() {
+      try {
+        _prebuild();
+      } catch (Exception e) {
+        log.warn("Execution prebuild failed", e);
+        this.addError(
+            new ExecutionError()
+                .setMessage(e.getMessage())
+                .setException(e)
+                .setPath(Collections.emptyList()));
+      }
+    }
+
+    private void _prebuild() {
 
       if (super.executorService == null) {
         super.executorService = ForkJoinPool.commonPool();

@@ -1,17 +1,18 @@
 package me.wener.jraphql.exec;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Table;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import me.wener.jraphql.lang.Document;
@@ -28,13 +29,11 @@ import me.wener.jraphql.parse.GraphParser;
 @Slf4j
 public class DefaultGraphExecutor implements GraphExecutor {
 
-  private GraphParser parser;
-  private ExecutorService executorService = MoreExecutors.newDirectExecutorService();
-  private TypeSystemDocument typeSystemDocument;
-  private FieldResolverRegistry resolverRegistry;
-  private TypeResolver typeResolver;
-
-  private Table<String, String, FieldResolver> resolvers = HashBasedTable.create();
+  @NonNull private GraphParser parser;
+  @NonNull private ExecutorService executorService;
+  @NonNull private TypeSystemDocument typeSystemDocument;
+  @NonNull private FieldResolverRegistry resolverRegistry;
+  @NonNull @Builder.Default private TypeResolver typeResolver = (ctx, s, n) -> null;
 
   @Override
   public CompletionStage<ExecuteResult> execute(
@@ -69,19 +68,34 @@ public class DefaultGraphExecutor implements GraphExecutor {
 
     return execution
         .getResult()
-        .thenApplyAsync(
+        .exceptionally(
+            e -> {
+              // SHOULD NOT HAPPEN
+              log.warn("Failed to execute", e);
+              return null;
+            })
+        .thenApply(
             v -> {
               ExecuteResult result = new ExecuteResult();
               result.setData(v);
-              result.setErrors(execution.getErrors());
+              result.setErrors(
+                  execution
+                      .getErrors()
+                      .stream()
+                      .map(ExecutionError::toExecuteError)
+                      .collect(Collectors.toList()));
               return result;
             });
   }
 
-  @Override
-  public void validate(String query) {}
-
   public static class DefaultGraphExecutorBuilder {
+    private ExecutorService executorService = ForkJoinPool.commonPool();
+
+    public DefaultGraphExecutorBuilder directExecutorService() {
+      executorService = MoreExecutors.newDirectExecutorService();
+      return this;
+    }
+
     public DefaultGraphExecutorBuilder resolver(FieldResolver resolver) {
       resolverRegistry = FieldResolverRegistry.identity(resolver);
       return this;
