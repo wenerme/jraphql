@@ -125,11 +125,27 @@ public class TypeSystemDocument {
     return null;
   }
 
+  /** @param source Source name contain path */
   public List<TypeDefinition> findTypesBySource(String source) {
     List<TypeDefinition> list = Lists.newArrayList();
     for (TypeDefinition definition : definitions.values()) {
       if (definition.getSourceLocation().getSource().equals(source)) {
         list.add(definition);
+      }
+    }
+    return list;
+  }
+
+  /** @param filename Filename of source with extension */
+  public List<TypeDefinition> findTypesBySourceFilename(String filename) {
+    List<TypeDefinition> list = Lists.newArrayList();
+    for (TypeDefinition definition : definitions.values()) {
+      String source = definition.getSourceLocation().getSource();
+      if (source.endsWith(filename)) {
+        if (source.length() == filename.length()
+            || source.charAt(source.length() - filename.length() - 1) == '/') {
+          list.add(definition);
+        }
       }
     }
     return list;

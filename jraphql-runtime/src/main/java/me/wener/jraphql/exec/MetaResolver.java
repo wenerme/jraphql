@@ -2,45 +2,57 @@ package me.wener.jraphql.exec;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.Setter;
 import me.wener.jraphql.exec.Introspection.Schema;
 
 /**
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 2018/4/8
  */
+@Getter
+@Setter
 public class MetaResolver implements FieldResolver {
+
+  private boolean disableIntrospection;
 
   @Override
   public Object resolve(FieldResolveContext ctx) {
 
-    if (ctx.getFieldName().equals("__schema")) {
-      return getSchema(ctx);
+    if (!disableIntrospection) {
+      switch (ctx.getFieldName()) {
+        case "__schema":
+          return getSchema(ctx);
+        case "__type":
+          return getSchema(ctx).getType(String.valueOf(ctx.getArguments().get("name")));
+        case "__typename":
+          return ctx.getObjectName();
+      }
+
+      switch (ctx.getObjectName()) {
+        case "__Schema":
+          return resolveSchema(ctx);
+        case "__Type":
+          return resolveType(ctx);
+        case "__InputValue":
+          return resolveInputValue(ctx);
+        case "__Field":
+          return resolveField(ctx);
+        case "__Directive":
+          return resolveDirective(ctx);
+        case "__EnumValue":
+          return resolveEnumValue(ctx);
+        case "__DirectiveLocation":
+        case "__TypeKind":
+          return String.valueOf(ctx.getSource());
+      }
     }
-    if (ctx.getFieldName().equals("__type")) {
-      return getSchema(ctx).getType(String.valueOf(ctx.getArguments().get("name")));
-    }
-    if (ctx.getFieldName().equals("__typename")) {
-      return ctx.getObjectName();
-    }
+
     if (ctx.getSource() == null) {
       return null;
     }
 
     switch (ctx.getObjectName()) {
-      case "__Schema":
-        return resolveSchema(ctx);
-      case "__Type":
-        return resolveType(ctx);
-      case "__InputValue":
-        return resolveInputValue(ctx);
-      case "__Field":
-        return resolveField(ctx);
-      case "__Directive":
-        return resolveDirective(ctx);
-      case "__EnumValue":
-        return resolveEnumValue(ctx);
-      case "__DirectiveLocation":
-      case "__TypeKind":
       case "ID":
         return String.valueOf(ctx.getSource());
       case "Int":
@@ -52,7 +64,7 @@ public class MetaResolver implements FieldResolver {
       case "Boolean":
         return ctx.<Boolean>getSource();
       default:
-        throw new AssertionError();
+        return ctx.unresolved();
     }
   }
 

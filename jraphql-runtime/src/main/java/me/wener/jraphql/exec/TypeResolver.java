@@ -21,4 +21,15 @@ public interface TypeResolver {
    * </ul>
    */
   Object resolveType(FieldResolveContext resolveContext, Object source, String typeName);
+
+  /** @return Return a new TypeResolver that will try next resolver. */
+  default TypeResolver then(TypeResolver next) {
+    return (resolveContext, source, typeName) -> {
+      Object first = this.resolveType(resolveContext, source, typeName);
+      if (first == null) {
+        return next.resolveType(resolveContext, source, typeName);
+      }
+      return first;
+    };
+  }
 }

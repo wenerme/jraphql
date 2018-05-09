@@ -1,6 +1,8 @@
 package me.wener.jraphql.exec;
 
 /**
+ * Post-process for one resolve
+ *
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 23/03/2018
  */

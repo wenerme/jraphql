@@ -24,6 +24,8 @@ import me.wener.jraphql.lang.UnionTypeDefinition;
 import me.wener.jraphql.lang.UnionTypeExtension;
 
 /**
+ * Helper methods to extend the types.
+ *
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 2018/4/8
  */

@@ -57,13 +57,13 @@ public class TableFieldResolverRegistry implements FieldResolverRegistry {
   public static class TableFieldResolverRegistryBuilder {
     private Table<String, String, FieldResolver> resolverTable = HashBasedTable.create();
 
-    public TableFieldResolverRegistryBuilder forType(FieldResolver resolver, String type) {
-      resolverTable.put(type, "*", resolver);
+    public TableFieldResolverRegistryBuilder forType(FieldResolver resolver, String typeName) {
+      resolverTable.put(typeName, "*", resolver);
       return this;
     }
 
-    public TableFieldResolverRegistryBuilder forTypes(FieldResolver resolver, String... types) {
-      for (String type : types) {
+    public TableFieldResolverRegistryBuilder forTypes(FieldResolver resolver, String... typeNames) {
+      for (String type : typeNames) {
         forType(resolver, type);
       }
       return this;
@@ -80,8 +80,8 @@ public class TableFieldResolverRegistry implements FieldResolverRegistry {
       return this;
     }
 
-    public TableFieldResolverRegistryBuilder forField(FieldResolver resolver, String field) {
-      resolverTable.put("*", field, resolver);
+    public TableFieldResolverRegistryBuilder forField(FieldResolver resolver, String fieldName) {
+      resolverTable.put("*", fieldName, resolver);
       return this;
     }
 

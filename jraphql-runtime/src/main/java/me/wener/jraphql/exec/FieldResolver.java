@@ -28,4 +28,15 @@ public interface FieldResolver {
    * </ul>
    */
   Object resolve(FieldResolveContext ctx);
+
+  /** @return A new resolver will run the next resolver */
+  default FieldResolver then(FieldResolver next) {
+    return (ctx) -> {
+      Object first = this.resolve(ctx);
+      if (ctx.isUnresolved(first)) {
+        return next.resolve(ctx);
+      }
+      return first;
+    };
+  }
 }
