@@ -77,13 +77,15 @@ public class DefaultGraphExecutor implements GraphExecutor {
         .thenApply(
             v -> {
               ExecuteResult result = new ExecuteResult();
-              result.setData(v);
               result.setErrors(
                   execution
                       .getErrors()
                       .stream()
                       .map(ExecutionError::toExecuteError)
                       .collect(Collectors.toList()));
+              if (result.getErrors().isEmpty()) {
+                result.setData(v);
+              }
               return result;
             });
   }

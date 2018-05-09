@@ -47,20 +47,24 @@ enum LengthUnit {
 }
 # A humanoid creature from the Star Wars universe
 type Human implements Character {
+    # These are optional, will get from Character
     # The ID of the human
-    id: ID!
+    # id: ID!
     # What this human calls themselves
-    name: String!
-    # Height in the preferred unit, default is meters
-    height(unit: LengthUnit = METER): Float!
-    # Mass in kilograms, or null if unknown
-    mass: Float
+    # name: String!
     # This human's friends, or an empty list if they have none
-    friends: [Character]
+    # friends: [Character]
+
     # The friends of the human exposed as a connection with edges
     friendsConnection(first: Int, after: ID): FriendsConnection!
     # The movies this human appears in
     appearsIn: [Episode!]!
+
+
+    # Height in the preferred unit, default is meters
+    height(unit: LengthUnit = METER): Float!
+    # Mass in kilograms, or null if unknown
+    mass: Float
     # A list of starships this person has piloted, or an empty list if none
     starships: [Starship]
 }

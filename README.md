@@ -56,14 +56,14 @@ type CrmQuery {
 type CrmUser {
   customers: [Customer]
 }
-extend Query by CrmQuery
-extend User by CrmUser
+extend type Query by CrmQuery
+extend type User by CrmUser
 
 # erp.graphqls
 type ErpQuery {
   product(id:ID!):Product
 }
-extend Query by ErpQuery
+extend type Query by ErpQuery
 ```
 
 #### Conditional schema
@@ -73,7 +73,7 @@ extend Query by ErpQuery
 type AdminMutation {
   changePassword(id:ID,password:String): ChangePasswordPayload
 }
-extend Mutation by AdminMutation @Role(role:"admin")
+extend type Mutation by AdminMutation @Role(role:"admin")
 ```
 
 #### Allowed directives on directive definition, add DIRECTIVE location

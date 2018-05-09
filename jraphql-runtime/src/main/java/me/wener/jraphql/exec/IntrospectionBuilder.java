@@ -6,10 +6,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import me.wener.jraphql.exec.Introspection.Directive;
@@ -44,12 +47,12 @@ class IntrospectionBuilder {
   private List<Directive> directives = Lists.newArrayList();
   private Multimap<String, String> subtypes = HashMultimap.create();
 
-  public IntrospectionBuilder(TypeSystemDocument typeSystemDocument) {
+  IntrospectionBuilder(TypeSystemDocument typeSystemDocument) {
     this.typeSystemDocument = typeSystemDocument;
     buildSchema(typeSystemDocument);
   }
 
-  Introspection.Schema buildSchema(TypeSystemDocument typeSystemDocument) {
+  private Introspection.Schema buildSchema(TypeSystemDocument typeSystemDocument) {
 
     // prepare
     for (TypeDefinition definition : typeSystemDocument.getDefinitions().values()) {
@@ -85,6 +88,18 @@ class IntrospectionBuilder {
           buildTypeRef(definition);
       }
     }
+
+    // post process
+    for (TypeDefinition definition : typeSystemDocument.getDefinitions().values()) {
+      switch (definition.getKind()) {
+        case OBJECT:
+          Type type = requireType(definition.getName());
+          // EXTENSION merge the fields from interfaces
+          type.setFields(collectObjectField(type));
+          break;
+      }
+    }
+
     schema = new Introspection.Schema();
     schema
         .setDirectives(directives)
@@ -104,7 +119,7 @@ class IntrospectionBuilder {
     return schema;
   }
 
-  Directive buildDirective(DirectiveDefinition definition) {
+  private Directive buildDirective(DirectiveDefinition definition) {
     Directive v = new Directive();
     v.setName(definition.getName())
         .setLocations(
@@ -118,11 +133,11 @@ class IntrospectionBuilder {
     return v;
   }
 
-  List<Introspection.InputValue> buildInputValues(List<InputValueDefinition> values) {
+  private List<Introspection.InputValue> buildInputValues(List<InputValueDefinition> values) {
     return values.stream().map(this::buildInputValue).collect(Collectors.toList());
   }
 
-  Introspection.InputValue buildInputValue(InputValueDefinition definition) {
+  private Introspection.InputValue buildInputValue(InputValueDefinition definition) {
     return new Introspection.InputValue()
         .setName(definition.getName())
         .setDescription(findDescription(definition.getDescription(), definition))
@@ -134,11 +149,11 @@ class IntrospectionBuilder {
     ;
   }
 
-  List<Introspection.Field> buildFields(List<FieldDefinition> values) {
+  private List<Introspection.Field> buildFields(List<FieldDefinition> values) {
     return values.stream().map(this::buildField).collect(Collectors.toList());
   }
 
-  Introspection.Field buildField(FieldDefinition definition) {
+  private Introspection.Field buildField(FieldDefinition definition) {
     Field builder = new Field();
     builder
         .setName(definition.getName())
@@ -168,11 +183,11 @@ class IntrospectionBuilder {
     return Optional.empty();
   }
 
-  Type buildType(String type) {
+  private Type buildType(String type) {
     return requireType(type);
   }
 
-  Type buildType(me.wener.jraphql.lang.Type type) {
+  private Type buildType(me.wener.jraphql.lang.Type type) {
     switch (type.getKind()) {
       case NAMED:
         // NOTE required type already build up
@@ -189,7 +204,7 @@ class IntrospectionBuilder {
     return Objects.requireNonNull(types.get(name), "type not found: " + name);
   }
 
-  Introspection.EnumValue buildEnumValue(EnumValueDefinition definition) {
+  private Introspection.EnumValue buildEnumValue(EnumValueDefinition definition) {
     EnumValue builder =
         new EnumValue()
             .setName(definition.getName())
@@ -200,7 +215,31 @@ class IntrospectionBuilder {
     return builder;
   }
 
-  Type buildTypeRef(TypeDefinition definition) {
+  private List<Field> collectObjectField(Type object) {
+    LinkedHashMap<String, Field> map = Maps.newLinkedHashMap();
+    collectObjectInterfaceField(object, map, Sets.newHashSet());
+    return ImmutableList.copyOf(map.values());
+  }
+
+  private void collectObjectInterfaceField(
+    Type type, Map<String, Field> map, Set<String> visited) {
+    // TODO wide first scan
+    if (type.getFields() != null) {
+      for (Field field : type.getFields()) {
+        map.putIfAbsent(field.getName(), field);
+      }
+    }
+    if (type.getInterfaces() != null) {
+      for (Type iface : type.getInterfaces()) {
+        if (visited.add(iface.getName())) {
+          collectObjectInterfaceField(iface, map, visited);
+        }
+      }
+    }
+
+  }
+
+  private Type buildTypeRef(TypeDefinition definition) {
     Type type = requireType(definition.getName());
     switch (definition.getKind()) {
       case OBJECT:
@@ -233,7 +272,7 @@ class IntrospectionBuilder {
     return type;
   }
 
-  String findDescription(String desc, Node node) {
+  private String findDescription(String desc, Node node) {
     if (desc == null) {
       desc =
           node.getComments()
@@ -247,7 +286,7 @@ class IntrospectionBuilder {
     return desc;
   }
 
-  Type buildType(TypeDefinition definition) {
+  private Type buildType(TypeDefinition definition) {
     Type type = new Type();
     type.setName(definition.getName())
         .setDescription(findDescription(definition.getDescription(), definition));

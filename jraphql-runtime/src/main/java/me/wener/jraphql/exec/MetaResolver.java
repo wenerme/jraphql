@@ -29,6 +29,10 @@ public class MetaResolver implements FieldResolver {
           return ctx.getObjectName();
       }
 
+      if (ctx.getSource() == null) {
+        return null;
+      }
+
       switch (ctx.getObjectName()) {
         case "__Schema":
           return resolveSchema(ctx);
