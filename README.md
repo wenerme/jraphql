@@ -41,21 +41,51 @@ __Pluggable__       | language representation is not related to parser impl
 
 ### Syntax Extension
 
+#### Add `extend by name` syntax for object and interface
+
+#### Weave multi schemas
 ```graphql
-# 1. extend by name syntax
+# common.graphqls
+scalar Version
 
-type MyQuery {
-  myUser(id:ID!):MyUser
+# crm.graphqls
+type CrmQuery {
+  customer(id:ID!):Customer
+  crmVersion: Version!
 }
+type CrmUser {
+  customers: [Customer]
+}
+extend Query by CrmQuery
+extend User by CrmUser
 
-extend Query by MyQuery @Role(role:"admin")
+# erp.graphqls
+type ErpQuery {
+  product(id:ID!):Product
+}
+extend Query by ErpQuery
+```
 
-# 2. Allowed directives on directive definition, add DIRECTIVE_DEFINITION location
+#### Conditional schema
 
-directive @JavaType(type:String) on DIRECTIVE_DEFINITION
+```graphql
+# Only admin can see and use these methods
+type AdminMutation {
+  changePassword(id:ID,password:String): ChangePasswordPayload
+}
+extend Mutation by AdminMutation @Role(role:"admin")
+```
+
+#### Allowed directives on directive definition, add DIRECTIVE location
+
+```graphql
+directive @JavaType(type:String) on DIRECTIVE
 directive @Auth(value:String) @JavaType(type:"Auth") on FIELD_DEFINITION;
+```
 
-# 3. Allowed schema has optional name
+#### Allowed schema has optional name
+
+```graphql
 schema Test {
   query: MyQuery
 }
