@@ -15,10 +15,6 @@
             <groupId>me.wener.jraphql</groupId>
             <artifactId>jraphql-lang</artifactId>
         </dependency>
-        <dependency>
-            <groupId>me.wener.jraphql</groupId>
-            <artifactId>jrapgql-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.jodd</groupId>
