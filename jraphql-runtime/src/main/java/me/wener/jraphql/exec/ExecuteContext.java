@@ -20,4 +20,6 @@ public interface ExecuteContext {
 
   /** @return root source of the execution */
   <T> T getSource();
+
+  Introspection.Schema getIntrospectionSchema();
 }

@@ -6,16 +6,12 @@ package me.wener.jraphql.exec;
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 2018/4/4
  */
-public interface FieldResolver {
+@FunctionalInterface
+public interface FieldResolver extends ExecutionResolver {
 
   /** @return a resolver always resolved to unresolved */
   static FieldResolver unresolved() {
     return FieldResolveContext::unresolved;
-  }
-
-  /** @return a resolver use the given registry to lookup resolver and resolve */
-  static FieldResolver registry(FieldResolverRegistry registry) {
-    return (ctx) -> registry.lookup(ctx).resolve(ctx);
   }
 
   /**
@@ -28,15 +24,4 @@ public interface FieldResolver {
    * </ul>
    */
   Object resolve(FieldResolveContext ctx);
-
-  /** @return A new resolver will run the next resolver */
-  default FieldResolver then(FieldResolver next) {
-    return (ctx) -> {
-      Object first = this.resolve(ctx);
-      if (ctx.isUnresolved(first)) {
-        return next.resolve(ctx);
-      }
-      return first;
-    };
-  }
 }

@@ -20,8 +20,8 @@ import me.wener.jraphql.example.StarWarResolverV1.StarWarData;
 import me.wener.jraphql.exec.DefaultGraphExecutor;
 import me.wener.jraphql.exec.ExecuteResult;
 import me.wener.jraphql.exec.MetaResolver;
-import me.wener.jraphql.exec.TableFieldResolverRegistry;
 import me.wener.jraphql.exec.TypeSystemDocument;
+import me.wener.jraphql.exec.resolver.TableChainFieldResolver;
 import me.wener.jraphql.parse.GraphParser;
 import me.wener.jraphql.parse.GraphParser.BatchParseOption;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,9 +65,9 @@ public class StarWarApplication {
 
     MetaResolver metaResolver = new MetaResolver();
     StarWarResolverV1 starWarResolver = new StarWarResolverV1();
-    TableFieldResolverRegistry resolver =
-        TableFieldResolverRegistry.builder()
-            .forTypes(starWarResolver, document.findTypesBySource("starwars.graphqls"))
+    TableChainFieldResolver resolver =
+        TableChainFieldResolver.builder()
+            .forTypes(starWarResolver, document.findTypesBySourceFilename("starwars.graphqls"))
             .forMeta(metaResolver)
             .fallback(metaResolver)
             .build();
@@ -76,7 +76,7 @@ public class StarWarApplication {
     DefaultGraphExecutor executor =
         DefaultGraphExecutor.builder()
             .parser(parser)
-            .resolverRegistry(resolver)
+            .fieldResolver(resolver)
             .typeResolver(starWarResolver)
             .typeSystemDocument(document)
             .build();

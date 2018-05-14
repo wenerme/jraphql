@@ -184,7 +184,7 @@ public class StarWarResolverV1 implements FieldResolver, TypeResolver {
   }
 
   @Override
-  public Object resolveType(FieldResolveContext resolveContext, Object source, String typeName) {
+  public Object resolveType(FieldResolveContext resolveContext, Object source) {
     if (source instanceof String) {
       source = resolveContext.<StarWarData>getRootSource().get((String) source);
     }
@@ -298,7 +298,7 @@ public class StarWarResolverV1 implements FieldResolver, TypeResolver {
 
     /** Inline the type resolve */
     @Override
-    public Object resolveType(FieldResolveContext resolveContext, Object source, String typeName) {
+    public Object resolveType(FieldResolveContext resolveContext, Object source) {
       return "Human";
     }
   }

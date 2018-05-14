@@ -591,8 +591,6 @@ public class GraphQLLangVisitor extends me.wener.jraphql.parser.antlr.GraphQLBas
     builder.sourceLocation(extractSourceLocation(ctx));
     builder.comments(extractComments(ctx));
 
-    // TODO comments
-
     if (builder instanceof BuildArguments) {
       ((BuildArguments) builder)
           .arguments(visitArguments(ctx.getRuleContext(ArgumentsContext.class, 0)).getValue());

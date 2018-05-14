@@ -13,6 +13,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,8 +53,10 @@ public class Execution implements ExecuteContext {
   @NonNull private String operationType;
   @NonNull private OperationDefinition operationDefinition;
   @NonNull private ObjectTypeDefinition operationTypeDefinition;
-  @NonNull private FieldResolverRegistry resolverRegistry;
-  private TypeResolver typeResolver;
+  @NonNull private FieldResolver fieldResolver;
+  @NonNull private PostResolver postResolver;
+  @NonNull private TypeResolver typeResolver;
+  @NotNull private Introspection.Schema introspectionSchema;
 
   private List<ExecutionError> errors;
   private CompletableFuture<Object> result = new CompletableFuture<>();
@@ -146,27 +149,16 @@ public class Execution implements ExecuteContext {
 
   protected CompletionStage<?> doResolveField(ExecuteFieldContext context) {
     try {
-      FieldResolver resolver = lookupFieldResolver(context);
       CompletionStage<Object> resolved =
-          CompletableFuture.supplyAsync(() -> resolver.resolve(context), getExecutorService());
+          CompletableFuture.supplyAsync(() -> fieldResolver.resolve(context), getExecutorService());
       return resolved
+          .thenCompose(v -> Later.asCompletionStage(v).toCompletableFuture())
           .thenCompose(
               v -> {
-                if (v instanceof CompletionStage) {
-                  return ((CompletionStage<Object>) v).toCompletableFuture();
+                if (v != null) {
+                  return Later.asCompletionStage(postResolver.postResolve(context, v));
                 }
-                return CompletableFuture.completedFuture(v);
-              })
-          .thenCompose(
-              v -> {
-                if (v instanceof PostResolver) {
-                  return Later.asCompletionStage(
-                      ((PostResolver) v).postResolve(context, resolver, v));
-                } else if (resolver instanceof PostResolver) {
-                  return Later.asCompletionStage(
-                      ((PostResolver) resolver).postResolve(context, resolver, v));
-                }
-                return CompletableFuture.completedFuture(v);
+                return CompletableFuture.completedFuture(null);
               })
           .thenApply(
               v -> {
@@ -184,12 +176,12 @@ public class Execution implements ExecuteContext {
     }
   }
 
-  protected FieldResolver lookupFieldResolver(ExecuteFieldContext context) {
-    if (context.getSource() instanceof FieldResolver) {
-      return (FieldResolver) context.getSource();
-    }
-    return resolverRegistry.lookup(context);
-  }
+  //  protected FieldResolver lookupFieldResolver(ExecuteFieldContext context) {
+  //    if (context.getSource() instanceof FieldResolver) {
+  //      return (FieldResolver) context.getSource();
+  //    }
+  //    return resolverRegistry.lookup(context);
+  //  }
 
   protected void _executeType(ExecuteTypeContext context) {
     for (Field field : context.getFieldSelection().values()) {
@@ -257,7 +249,7 @@ public class Execution implements ExecuteContext {
       throw Errors.typeResolveFailed(name);
     }
 
-    Object target = resolver.resolveType(context, source, name);
+    Object target = resolver.resolveType(context, source);
     if (target == null) {
       throw Errors.typeResolveFailed(name);
     }
@@ -352,7 +344,7 @@ public class Execution implements ExecuteContext {
         Object value = super.variables.get(name);
         if (value == null) {
           if (definition.getDefaultValue() == null) {
-            // TODO should i use null for missing nonnull variable
+            // TODO should i use null for missing nullable variable
             throw new GraphLanguageException(String.format("variable '%s' not found", name));
           }
 

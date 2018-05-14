@@ -9,7 +9,13 @@ import me.wener.jraphql.lang.TypeDefinition;
  * @author <a href=http://github.com/wenerme>wener</a>
  * @since 2018/4/12
  */
-public interface TypeResolver {
+@FunctionalInterface
+public interface TypeResolver extends ExecutionResolver {
+
+  /** @return a TypeResolver always return {@code null} */
+  static TypeResolver unresolved() {
+    return (c, s) -> null;
+  }
 
   /**
    * Resolve to an {@linkplain ObjectTypeDefinition Object} type, can accept
@@ -20,16 +26,5 @@ public interface TypeResolver {
    *   <li>{@code null} failed to resolve
    * </ul>
    */
-  Object resolveType(FieldResolveContext resolveContext, Object source, String typeName);
-
-  /** @return Return a new TypeResolver that will try next resolver. */
-  default TypeResolver then(TypeResolver next) {
-    return (resolveContext, source, typeName) -> {
-      Object first = this.resolveType(resolveContext, source, typeName);
-      if (first == null) {
-        return next.resolveType(resolveContext, source, typeName);
-      }
-      return first;
-    };
-  }
+  Object resolveType(FieldResolveContext resolveContext, Object source);
 }

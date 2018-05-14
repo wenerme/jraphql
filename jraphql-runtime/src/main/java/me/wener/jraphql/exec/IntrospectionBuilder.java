@@ -145,7 +145,7 @@ class IntrospectionBuilder {
         .setDefaultValue(
             definition.getDefaultValue() == null
                 ? null
-                : JSON.stringify(definition.getDefaultValue().getValue())) // TODO JSON ?
+                : JSON.stringify(definition.getDefaultValue().getValue()))
     ;
   }
 

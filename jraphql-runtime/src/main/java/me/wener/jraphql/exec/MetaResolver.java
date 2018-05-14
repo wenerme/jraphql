@@ -19,14 +19,17 @@ public class MetaResolver implements FieldResolver {
   @Override
   public Object resolve(FieldResolveContext ctx) {
 
+    switch (ctx.getFieldName()) {
+      case "__typename":
+        return ctx.getObjectName();
+    }
+
     if (!disableIntrospection) {
       switch (ctx.getFieldName()) {
         case "__schema":
           return getSchema(ctx);
         case "__type":
           return getSchema(ctx).getType(String.valueOf(ctx.getArguments().get("name")));
-        case "__typename":
-          return ctx.getObjectName();
       }
 
       if (ctx.getSource() == null) {
@@ -73,7 +76,7 @@ public class MetaResolver implements FieldResolver {
   }
 
   protected Schema getSchema(FieldResolveContext ctx) {
-    return ctx.getExecuteContext().getTypeSystemDocument().generateIntrospection();
+    return ctx.getExecuteContext().getIntrospectionSchema();
   }
 
   protected Object resolveDirective(FieldResolveContext ctx) {

@@ -8,6 +8,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,9 +32,17 @@ public class DefaultGraphExecutor implements GraphExecutor {
 
   @NonNull private GraphParser parser;
   @NonNull private ExecutorService executorService;
+  // type system
   @NonNull private TypeSystemDocument typeSystemDocument;
-  @NonNull private FieldResolverRegistry resolverRegistry;
-  @NonNull @Builder.Default private TypeResolver typeResolver = (ctx, s, n) -> null;
+  @NotNull private Introspection.Schema introspectionSchema;
+  // resolvers
+  @NonNull private FieldResolver fieldResolver;
+  @NonNull @Builder.Default private PostResolver postResolver = PostResolver.identity();
+  @NonNull @Builder.Default private TypeResolver typeResolver = TypeResolver.unresolved();
+
+  public static DefaultGraphExecutorBuilder builder() {
+    return new DefaultGraphExecutorBuilderPrebuild();
+  }
 
   @Override
   public CompletionStage<ExecuteResult> execute(
@@ -54,13 +63,19 @@ public class DefaultGraphExecutor implements GraphExecutor {
 
     Execution execution =
         Execution.builder()
+            // resolver
+            .fieldResolver(fieldResolver)
+            .typeResolver(typeResolver)
+            .postResolver(postResolver)
+            // type
             .typeSystemDocument(typeSystemDocument)
+            .introspectionSchema(introspectionSchema)
+            // execution
             .executableDocument(executableDocument)
             .operationName(operationName)
             .variables(variables)
             .source(source)
             .executorService(executorService)
-            .resolverRegistry(resolverRegistry)
             .typeResolver(typeResolver)
             .build();
 
@@ -77,17 +92,30 @@ public class DefaultGraphExecutor implements GraphExecutor {
         .thenApply(
             v -> {
               ExecuteResult result = new ExecuteResult();
+              // data always returned no matter failed or not
+              result.setData(v);
               result.setErrors(
                   execution
                       .getErrors()
                       .stream()
                       .map(ExecutionError::toExecuteError)
                       .collect(Collectors.toList()));
-              if (result.getErrors().isEmpty()) {
-                result.setData(v);
-              }
               return result;
             });
+  }
+
+  protected static class DefaultGraphExecutorBuilderPrebuild extends DefaultGraphExecutorBuilder {
+    private void prebuild() {
+      if (super.introspectionSchema == null) {
+        super.introspectionSchema = super.typeSystemDocument.generateIntrospection();
+      }
+    }
+
+    @Override
+    public DefaultGraphExecutor build() {
+      prebuild();
+      return super.build();
+    }
   }
 
   public static class DefaultGraphExecutorBuilder {
@@ -95,11 +123,6 @@ public class DefaultGraphExecutor implements GraphExecutor {
 
     public DefaultGraphExecutorBuilder directExecutorService() {
       executorService = MoreExecutors.newDirectExecutorService();
-      return this;
-    }
-
-    public DefaultGraphExecutorBuilder resolver(FieldResolver resolver) {
-      resolverRegistry = FieldResolverRegistry.identity(resolver);
       return this;
     }
   }

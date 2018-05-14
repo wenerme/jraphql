@@ -156,6 +156,7 @@ public class ExecuteTypeContext extends ExecutableContext {
         if (Objects.equals(super.objectTypeDefinition.getName(), typeCondition)) {
           return true;
         }
+        // FIXME handle ancestor interface check ?
         if (super.objectTypeDefinition.getInterfaces().contains(typeCondition)) {
           return true;
         }
