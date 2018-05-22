@@ -43,4 +43,10 @@ public interface FieldResolveContext {
   default boolean isUnresolved(Object source) {
     return AlternativeValue.UNRESOLVED == source;
   }
+
+  <T> T get(Object key);
+
+  <T> T put(Object key, T val);
+
+  <T> T remove(Object key);
 }

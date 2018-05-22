@@ -1,4 +1,4 @@
-package me.wener.jraphql.exec;
+package me.wener.jraphql.generator;
 
 import java.util.List;
 import java.util.Map;
@@ -65,6 +65,7 @@ public interface GraphQLGenerator {
   //    return sb;
   //  }
 
+  // TODO Unescape
   static CharSequence generateString(String v) {
     return '"' + v + '"';
   }

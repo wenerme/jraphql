@@ -23,6 +23,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import me.wener.jraphql.generator.GraphQLGenerator;
 import me.wener.jraphql.lang.Field;
 import me.wener.jraphql.lang.GraphLanguageException;
 import me.wener.jraphql.lang.ObjectTypeDefinition;

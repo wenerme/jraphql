@@ -1,10 +1,15 @@
 package me.wener.jraphql.exec;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -15,6 +20,43 @@ import lombok.ToString;
  * @since 09/03/2018
  */
 public interface Introspection {
+
+  /** Weave the types in schema, use after deserialize */
+  static Schema resolveSchmeaType(Schema schema) {
+    Map<String, Type> types = Maps.newHashMap();
+    for (Type type : schema.getTypes()) {
+      types.put(type.getName(), type);
+    }
+
+    if (schema.getQueryType() != null) {
+      schema.setQueryType(types.get(schema.getQueryType().getName()));
+    }
+    if (schema.getMutationType() != null) {
+      schema.setMutationType(types.get(schema.getMutationType().getName()));
+    }
+    if (schema.getSubscriptionType() != null) {
+      schema.setSubscriptionType(types.get(schema.getSubscriptionType().getName()));
+    }
+
+    for (Type type : schema.getTypes()) {
+      if (type.getFields() != null)
+        for (Field field : type.getFields()) {
+          for (InputValue value : field.getArgs()) {
+            value.setType(Holder.resolveType(types, value.getType()));
+          }
+        }
+      if (type.getInputFields() != null)
+        for (InputValue value : type.getInputFields()) {
+          value.setType(Holder.resolveType(types, value.getType()));
+        }
+      if (type.getPossibleTypes() != null)
+        type.getPossibleTypes().replaceAll(v -> types.get(v.getName()));
+      if (type.getInterfaces() != null)
+        type.getInterfaces().replaceAll(v -> types.get(v.getName()));
+    }
+    return schema;
+  }
+
   enum TypeKind {
     SCALAR,
     OBJECT,
@@ -66,9 +108,8 @@ public interface Introspection {
     }
   }
 
-  @Data
-  @ToString(exclude = {"ofType"})
-  @EqualsAndHashCode(exclude = {"ofType"})
+  @Getter
+  @Setter
   class Type {
 
     @NotNull private TypeKind kind;
@@ -86,6 +127,11 @@ public interface Introspection {
     private List<@NotNull InputValue> inputFields;
     // NON_NULL and LIST only
     private Type ofType; // This will cause circular reference
+
+    @Override
+    public String toString() {
+      return String.format("Type(%s %s)", kind, name);
+    }
   }
 
   @Data
@@ -97,7 +143,11 @@ public interface Introspection {
     private String description;
     @NotNull private List<@NotNull InputValue> args;
     @NotNull private Type type;
-    @NotNull private Boolean deprecated;
+
+    @JsonProperty("isDeprecated")
+    @NotNull
+    private Boolean deprecated;
+
     private String deprecationReason;
   }
 
@@ -117,7 +167,11 @@ public interface Introspection {
 
     @NotNull private String name;
     private String description;
-    @NotNull private Boolean deprecated;
+
+    @JsonProperty("isDeprecated")
+    @NotNull
+    private Boolean deprecated;
+
     private String deprecationReason;
   }
 
@@ -128,5 +182,19 @@ public interface Introspection {
     private String description;
     @NotNull private List<@NotNull DirectiveLocation> locations;
     @NotNull private List<@NotNull InputValue> args;
+  }
+
+  final class Holder {
+    private Holder() {}
+
+    private static Type resolveType(Map<String, Type> types, Type type) {
+      if (type.getOfType() != null) {
+        return type.setOfType(resolveType(types, type.getOfType()));
+      }
+      if (type.getName() != null) {
+        return types.get(type.getName());
+      }
+      return type;
+    }
   }
 }
